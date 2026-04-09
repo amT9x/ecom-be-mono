@@ -1,7 +1,9 @@
 // create fastify server
 import Fastify from 'fastify';
 
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3001;
+const HOST = process.env.HOST || '0.0.0.0';
+
 const app = Fastify({ logger: false});
 
 app.get('/', async () => {
@@ -14,8 +16,11 @@ app.get('/health', async () => {
 
 const start = async () => {
   try {
-    await app.listen({ port: PORT });
-    console.log(`Server is running on http://localhost:${PORT}`);
+    await app.listen({
+      host: HOST,
+      port: PORT
+    });
+    console.log(`Server is running on http://${HOST}:${PORT}`);
   } catch (err) {
     app.log.error(err);
   }
