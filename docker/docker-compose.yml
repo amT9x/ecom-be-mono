@@ -1,11 +1,11 @@
 version: "3.9"
+name: ecom-mono
 services:
   api:
-    image: docker_ecom_mono
+    image: ecom-mono
     build:
       context: ..
       dockerfile: docker/Dockerfile
-    container_name: ecom-mono
     ports:
       - "3001:3001"
     environment:
