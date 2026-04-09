@@ -1,0 +1,17 @@
+version: "3.9"
+services:
+  api:
+    image: docker_ecom_mono
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: ecom-mono
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      APP_NAME: ecom-mono
+      HOST: 0.0.0.0
+      PORT: 3001
+      LOG_LEVEL: info
+    restart: unless-stopped
