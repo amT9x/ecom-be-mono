@@ -4,6 +4,9 @@ GET {{baseUrl}}
 ### Health
 GET {{baseUrl}}/health
 
+### Health DB
+GET {{baseUrl}}/health/db
+
 ### Login
 # @name login
 POST {{baseUrl}}/login

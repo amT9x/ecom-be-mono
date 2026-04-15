@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+import { pool } from "./config/database.js"
 
 export function buildApp() {
   const app = Fastify({logger: false});
@@ -9,6 +10,24 @@ export function buildApp() {
 
   app.get('/health', async () => {
     return { status_app: 'ok' }
+  });
+
+  app.get('/health/db', async () => {
+    try {
+      const client = await pool.connect();
+
+      try {
+        await client.query('SELECT 1');
+      } finally {
+        client.release();
+      }
+    } catch (error) {
+      console.log("check db alive failed: ", error);
+    }
+
+    return {
+      status_db: 'ok'
+    }
   });
 
   app.post('/login', async () => {
