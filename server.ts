@@ -14,6 +14,19 @@ app.get('/health', async () => {
   return { status: 'ok' }
 });
 
+app.post('/login', async () => {
+  return {
+    accessToken: 'abc123'
+  };
+});
+
+app.get('/profile', async () => {
+  return {
+    id: 1,
+    username: 'user1'
+  };
+});
+
 const start = async () => {
   try {
     await app.listen({

@@ -3,3 +3,25 @@ GET {{baseUrl}}
 
 ### Health
 GET {{baseUrl}}/health
+
+### Login
+# @name login
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "username": "user1",
+  "password": "user1"
+}
+
+###
+# @name token
+> {%
+    const json = JSON.parse(login.response.body);
+#   chưa biết chỗ lấy log ở đâu? (output terminal -> rest???)
+    client.global.set("token", json.accessToken);
+%}
+
+### Profile
+GET {{baseUrl}}/profile
+Authorization: Bearer {{token}}
