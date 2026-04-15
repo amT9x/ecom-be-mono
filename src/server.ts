@@ -1,42 +1,21 @@
-// create fastify server
-import Fastify from 'fastify';
+import dotevn from 'dotenv';
+import { buildApp } from "./app.js";
 
-const PORT = Number(process.env.PORT) || 3001;
+dotevn.config({quiet: true});
+
 const HOST = process.env.HOST || '0.0.0.0';
+const PORT = Number(process.env.PORT) || 3001;
 
-const app = Fastify({ logger: false});
+const startServer = async () => {
+  const app = buildApp();
 
-app.get('/', async () => {
-  return { app: 'ecom' };
-});
-
-app.get('/health', async () => {
-  return { status: 'ok' }
-});
-
-app.post('/login', async () => {
-  return {
-    accessToken: 'abc123'
-  };
-});
-
-app.get('/profile', async () => {
-  return {
-    id: 1,
-    username: 'user1'
-  };
-});
-
-const start = async () => {
   try {
-    await app.listen({
-      host: HOST,
-      port: PORT
-    });
+    await app.listen({host: HOST, port: PORT});
     console.log(`Server is running on http://${HOST}:${PORT}`);
   } catch (err) {
     app.log.error(err);
+    process.exit(1);
   }
 };
 
-start();
+startServer();
