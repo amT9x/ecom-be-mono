@@ -1,14 +1,20 @@
 import Fastify from "fastify";
 import { pool } from "./config/database.js"
+import { requestContextPlugin } from './plugins/request-context.plugin.js';
+import { loggerPlugin } from './plugins/logger.plugin.js';
 
 export function buildApp() {
-  const app = Fastify({logger: false});
+  const app = Fastify({logger: true});
+
+  app.register(requestContextPlugin);
+  app.register(loggerPlugin);
 
   app.get('/', async () => {
     return { app: 'ecom' };
   });
 
-  app.get('/health', async () => {
+  app.get('/health', async (req) => {
+    req.log.info("health check");
     return { status_app: 'ok' }
   });
 
