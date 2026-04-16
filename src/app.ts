@@ -2,12 +2,14 @@ import Fastify from "fastify";
 import { pool } from "./config/database.js"
 import { requestContextPlugin } from './plugins/request-context.plugin.js';
 import { loggerPlugin } from './plugins/logger.plugin.js';
+import { productRoutes } from "./modules/products/product.route.js";
 
 export function buildApp() {
   const app = Fastify({logger: true});
 
   app.register(requestContextPlugin);
   app.register(loggerPlugin);
+  app.register(productRoutes);
 
   app.get('/', async () => {
     return { app: 'ecom' };

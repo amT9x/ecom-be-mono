@@ -1,0 +1,27 @@
+######################## PRODUCT #############################
+
+### GET
+GET {{baseUrl}}/products
+
+### POST
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+  "name": "iPhone",
+  "price": 1000,
+  "stock": 5
+}
+
+### UPDATE
+PUT {{baseUrl}}/products/0d1b57b0-03c3-4617-89f4-3bb1c4de7d46
+Content-Type: application/json
+
+{
+  "name": "iPhone 15 Pro",
+  "price": 1200,
+  "stock": 10
+}
+
+### DELETE
+DELETE {{baseUrl}}/products/600e607f-6c7b-404f-8954-1784b88e1f1f
