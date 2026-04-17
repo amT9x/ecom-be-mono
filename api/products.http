@@ -1,7 +1,20 @@
 ######################## PRODUCT #############################
+@limit = 10
+@offset = 20
+@created_at = 2026-04-17T07:57:28.501Z
+@id= a214e6ff-7daf-47eb-9c88-4cab33f8b8a9
 
 ### GET
 GET {{baseUrl}}/products
+
+### default pagination
+GET {{baseUrl}}/products
+?limit={{limit}}&offset={{offset}}
+
+### pagination use cursor
+GET {{baseUrl}}/products
+?created_at={{created_at}}
+&id={{id}}
 
 ### POST
 POST {{baseUrl}}/products
@@ -24,4 +37,4 @@ Content-Type: application/json
 }
 
 ### DELETE
-DELETE {{baseUrl}}/products/600e607f-6c7b-404f-8954-1784b88e1f1f
+DELETE {{baseUrl}}/products/{{id}}
