@@ -1,20 +1,17 @@
 ######################## PRODUCT #############################
-@limit = 10
-@offset = 20
-@created_at = 2026-04-17T07:57:28.501Z
-@id= a214e6ff-7daf-47eb-9c88-4cab33f8b8a9
+@page=3
+@cursor = eyJjcmVhdGVkX2F0IjoiMjAyNi0wNC0xN1QwNzo1NzoyOC41MDFaIiwiaWQiOiJhMjE0ZTZmZi03ZGFmLTQ3ZWItOWM4OC00Y2FiMzNmOGI4YTkifQ==
 
 ### GET
 GET {{baseUrl}}/products
 
 ### default pagination
 GET {{baseUrl}}/products
-?limit={{limit}}&offset={{offset}}
+?page={{page}}
 
 ### pagination use cursor
 GET {{baseUrl}}/products
-?created_at={{created_at}}
-&id={{id}}
+?cursor={{cursor}}
 
 ### POST
 POST {{baseUrl}}/products
