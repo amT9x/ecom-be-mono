@@ -8,7 +8,7 @@ build/
 .vscode/
 .env.example
 # local database snapshots
-db/*.pgsql
+db/*.sql
 db/*.dump
 
 # =====================
