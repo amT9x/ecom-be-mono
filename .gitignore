@@ -7,3 +7,13 @@ build/
 .idea/
 .vscode/
 .env.example
+# local database snapshots
+db/*.pgsql
+db/*.dump
+
+# =====================
+# Allow migrations & seeds
+# =====================
+!db/migration/**
+!db/init/**
+!db/seed/**
