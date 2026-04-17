@@ -14,13 +14,27 @@ export async function createProduct(data: any) {
   return result.rows[0];
 }
 
-export async function findProducts(limit: number, offset: number) {
-  const result = await pool.query(
-    `SELECT * FROM products
-     ORDER BY created_at DESC
-     LIMIT $1 OFFSET $2`,
-    [limit, offset]
-  );
+export async function findProducts(cursor?: {created_at: string, id: string} | null, limit = 10) {
+  let query = `
+    SELECT *
+    FROM products
+  `;
+
+  const values: any[] = [];
+
+  if (cursor) {
+    query += ` WHERE (created_at, id) < ($1, $2)`;
+    values.push(cursor.created_at, cursor.id);
+  }
+
+  query += `
+    ORDER BY created_at DESC, id DESC
+    LIMIT $${values.length + 1}
+  `;
+
+  values.push(limit + 1);
+
+  const result = await pool.query(query, values);
 
   return result.rows;
 }
