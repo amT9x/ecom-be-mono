@@ -1,6 +1,7 @@
 ######################## PRODUCT #############################
 @page=3
 @cursor = eyJjcmVhdGVkX2F0IjoiMjAyNi0wNC0xN1QwNzo1NzoyOC41MDFaIiwiaWQiOiJhMjE0ZTZmZi03ZGFmLTQ3ZWItOWM4OC00Y2FiMzNmOGI4YTkifQ==
+@id = 
 
 ### GET
 GET {{baseUrl}}/products
