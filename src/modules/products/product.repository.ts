@@ -1,6 +1,14 @@
 import {pool} from "../../config/database.js";
 import crypto from "node:crypto";
 
+type FindProductsOptions = {
+  cursor?: { created_at: string; id: string } | null;
+  limit: number;
+  page?: number;
+  sortField: string;
+  sortOrder: "asc" | "desc";
+};
+
 export async function createProduct(data: any) {
   const id = crypto.randomUUID();
 
@@ -14,7 +22,13 @@ export async function createProduct(data: any) {
   return result.rows[0];
 }
 
-export async function findProducts(cursor?: {created_at: string, id: string} | null, limit = 10) {
+export async function findProducts(options: FindProductsOptions) {
+  const {
+    cursor,
+    limit,
+    page,
+    sortField,
+    sortOrder } = options;
   let query = `
     SELECT *
     FROM products
@@ -22,16 +36,32 @@ export async function findProducts(cursor?: {created_at: string, id: string} | n
 
   const values: any[] = [];
 
+  // CURSOR PAGINATION
   if (cursor) {
-    query += ` WHERE (created_at, id) < ($1, $2)`;
+    const operator = sortOrder === "desc" ? "<" : ">";
+
+    query += `
+      WHERE (${sortField}, id) ${operator} ($1, $2)
+    `;
+
     values.push(cursor.created_at, cursor.id);
   }
 
+  // SORT
   query += `
-    ORDER BY created_at DESC, id DESC
-    LIMIT $${values.length + 1}
+    ORDER BY ${sortField} ${sortOrder.toUpperCase()},
+             id ${sortOrder.toUpperCase()}
   `;
 
+  // OFFSET PAGINATION
+  if (page && !cursor) {
+    const offset = (page - 1) * limit;
+    query += ` OFFSET $${values.length + 1}`;
+    values.push(offset);
+  }
+
+  // LIMIT + 1 trick
+  query += ` LIMIT $${values.length + 1}`;
   values.push(limit + 1);
 
   const result = await pool.query(query, values);
