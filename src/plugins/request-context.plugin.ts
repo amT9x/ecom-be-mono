@@ -1,12 +1,19 @@
+// metadata of request lifecycle
+
 import fp from "fastify-plugin";
 import crypto from "node:crypto";
+import { requestContext } from "../utils/request-context.js";
 
-export const requestContextPlugin = fp(async function (app) {
-  app.addHook("onRequest", async (req) => {
-    const requestId = crypto.randomUUID();
+export const requestContextPlugin = fp(function (app) {
+  app.addHook("onRequest", (req, reply, done) => {
+    const ctx = {
+      requestId: req.id ?? crypto.randomUUID(),
+      actorType: "user" as const,
+      startTime: Date.now(),
+      userId: undefined,
+    };
 
-    req.headers["x-request-id"] = requestId;
-
-    req.log.info({ requestId }, "onRequest hook");
+    requestContext.enter(ctx);
+    done();
   });
 });
