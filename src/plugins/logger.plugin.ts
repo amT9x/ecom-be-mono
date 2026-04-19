@@ -1,13 +1,28 @@
+// lifecycle observer
+
 import fp from "fastify-plugin";
 
 export const loggerPlugin = fp(async function (app) {
-  app.addHook("onResponse", async (req, rep) => {
+
+  app.addHook("onRequest", async (req) => {
     req.log.info(
       {
-        statusCode: rep.statusCode,
-        responseTime: rep.elapsedTime,
+        method: req.method,
+        url: req.url,
+        host: req.host,
+        ip: req.ip,
       },
-      "onResponse hook"
+      "onRequest: request started"
+    );
+  });
+
+  app.addHook("onResponse", async (req, reply) => {
+    req.log.info(
+      {
+        statusCode: reply.statusCode,
+        responseTime: reply.elapsedTime,
+      },
+      "onResponse: request completed"
     );
   });
 });
