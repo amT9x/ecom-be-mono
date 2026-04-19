@@ -25,7 +25,7 @@ Content-Type: application/json
 }
 
 ### UPDATE
-PUT {{baseUrl}}/products/0d1b57b0-03c3-4617-89f4-3bb1c4de7d46
+PUT {{baseUrl}}/products/{{id}}
 Content-Type: application/json
 
 {
