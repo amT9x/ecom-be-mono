@@ -1,11 +1,12 @@
 import Fastify from "fastify";
-import { pool } from "./config/database.js"
+import { pool } from "./config/database.js";
+import { loggerOptions } from "./config/logger.options.js";
 import { requestContextPlugin } from './plugins/request-context.plugin.js';
-import { loggerPlugin } from './plugins/logger.plugin.js';
+import { loggerPlugin } from './plugins/request-lifecycle-logger.plugin.js';
 import { productRoutes } from "./modules/products/product.route.js";
 
 export function buildApp() {
-  const app = Fastify({logger: true});
+  const app = Fastify({logger:loggerOptions});
 
   app.register(requestContextPlugin);
   app.register(loggerPlugin);
