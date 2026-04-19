@@ -1,109 +1,62 @@
-# Request Context
+## Request Context
 
-## Overview
+Request context automatically injects request metadata into all logs
+during the lifecycle of an HTTP request.
 
-This project uses **AsyncLocalStorage** to propagate request metadata across the entire request lifecycle.
+Injected fields:
 
-Each incoming request automatically receives a context containing:
-
-* requestId
-* userId
-* actorType
-* handler
-* service
-* repo
-* startTime
-
-The context is available anywhere without passing parameters manually.
-
----
-
-## How It Works
-
-1. `requestContextPlugin` runs on `onRequest`
-2. Metadata is stored in AsyncLocalStorage
-3. Logger automatically reads the context
-4. Logs are enriched without manual wiring
-
-```
-HTTP Request
-   ↓
-Fastify onRequest
-   ↓
-AsyncLocalStorage
-   ↓
-Controller → Service → Repository
-   ↓
-Logger auto-injects metadata
-```
+- requestId
+- actorType
+- userId
+- handler
+- service
+- repo
+- duration
 
 ---
 
 ## Usage
 
-### Access current request context
+### 1. Import logger
+
+In any layer (handler / service / repository):
 
 ```ts
-import { requestContext } from "@/utils/request-context";
-
-const ctx = requestContext.get();
+import { appLogger } from "@/infrastructure/logger";
 ```
 
 ---
 
-### Set handler name (Controller)
+### 2. Write logs normally
 
 ```ts
-requestContext.set("handler", "createProductController");
+appLogger.info("call service");   // handler
+appLogger.info("fetch repo");     // service
+appLogger.info("query db");       // repository
+```
+
+No need to access requestContext manually.
+
+---
+
+### 3. Result
+
+Logs automatically include request metadata:
+
+```
+INFO call service
+requestId=req-1
+handler=createProductHandler
 ```
 
 ---
 
-### Set service name
+## Important
 
-```ts
-requestContext.set("service", "createProductService");
-```
+❌ Do NOT call:
 
----
+requestContext.get()
 
-### Set repository name
+inside business logic.
 
-```ts
-requestContext.set("repo", "productRepository");
-```
-
----
-
-## Important Rules
-
-✅ Do:
-
-* Set metadata at logical boundaries (controller/service/repo)
-* Let logger read context automatically
-
-❌ Don't:
-
-* Pass requestId manually
-* Store request objects globally
-* Use context outside request lifecycle
-
----
-
-## Why This Exists
-
-Without request context:
-
-```
-controller → service → repo
-```
-
-metadata must be passed manually.
-
-With request context:
-
-```
-context flows automatically
-```
-
-This enables structured logging, tracing, and observability.
+Context injection is handled automatically by logger mixin.
