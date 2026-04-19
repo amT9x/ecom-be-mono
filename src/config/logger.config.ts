@@ -1,6 +1,6 @@
 const isProd = process.env.NODE_ENV === "production";
 
-export const loggerOptions = isProd
+export const loggerConfig = isProd
   ? {
       level: "info",
     }
