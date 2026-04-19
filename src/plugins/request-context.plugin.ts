@@ -2,7 +2,7 @@
 
 import fp from "fastify-plugin";
 import crypto from "node:crypto";
-import { requestContext } from "../utils/request-context.js";
+import { requestContext } from "../infrastructure/context/request-context.js";
 
 export const requestContextPlugin = fp(function (app) {
   app.addHook("onRequest", (req, reply, done) => {

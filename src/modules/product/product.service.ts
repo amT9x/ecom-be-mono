@@ -2,7 +2,7 @@ import * as repo from "./product.repository.js";
 import {
   encodeCursor,
   decodeCursor,
-} from "../../utils/cursor.js";
+} from "../../shared/pagination/cursor.js";
 
 export async function createProductService(body: any) {
   return repo.createProduct(body);
