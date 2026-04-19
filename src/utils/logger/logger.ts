@@ -1,5 +1,5 @@
 import { pino } from "pino";
-import { loggerConfig } from "../../config/logger.config.js";
+import { loggerOptions } from "../../config/logger.options.js";
 
 // Instance of pino
-export const logger = pino(loggerConfig);
+export const logger = pino(loggerOptions);
