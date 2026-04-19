@@ -9,7 +9,7 @@ export function buildApp() {
   const app = Fastify({logger:loggerConfig});
 
   app.register(requestContextPlugin);
-  app.register(loggerPlugin);
+  // app.register(loggerPlugin);
   app.register(productRoutes);
 
   app.get('/', async () => {
