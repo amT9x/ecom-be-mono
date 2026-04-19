@@ -1,7 +1,7 @@
 import dotevn from 'dotenv';
 import { connectDB } from "../app/loaders/db.loader.js";
 import { buildApp } from "./app.js";
-import { systemLogger } from '../infrastructure/logger/system.logger.js';
+import { systemLogger } from '../infrastructure/logger/index.js';
 
 dotevn.config({quiet: true});
 
