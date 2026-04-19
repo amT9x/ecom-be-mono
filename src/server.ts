@@ -1,6 +1,7 @@
 import dotevn from 'dotenv';
 import { connectDB } from "./loaders/loader.db.js"
 import { buildApp } from "./app.js";
+import { systemLogger } from './utils/logger/system.logger.js';
 
 dotevn.config({quiet: true});
 
@@ -13,7 +14,10 @@ const startServer = async () => {
 
   try {
     await app.listen({host: HOST, port: PORT});
-    console.log(`Server is running on http://${HOST}:${PORT}`);
+    systemLogger.info(
+      { host: HOST, port: PORT },
+      "Server is running"
+    )
   } catch (err) {
     app.log.error(err);
     process.exit(1);
