@@ -1,5 +1,6 @@
 import * as service from "./product.service.js";
 import { FastifyRequest, FastifyReply } from "fastify";
+import { requestContext } from "../../infrastructure/context/request-context.js";
 
 type GetProductParams = {
   id: string;
@@ -11,6 +12,7 @@ export async function createProductController(req: FastifyRequest, reply: Fastif
 }
 
 export async function getProductsController(req: FastifyRequest, reply: FastifyReply) {
+  requestContext.set("handler", "getProductsController");
   const products = await service.getProductsService(req.query);
   return reply.send(products);
 }

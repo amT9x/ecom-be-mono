@@ -3,13 +3,14 @@ import {
   encodeCursor,
   decodeCursor,
 } from "../../shared/pagination/cursor.js";
+import { requestContext } from "../../infrastructure/context/request-context.js";
 
 export async function createProductService(body: any) {
   return repo.createProduct(body);
 }
 
 export async function getProductsService(query: any) {
-
+  requestContext.set("service", "getProductsService");
   // LIMIT
   const limit = Math.min(Number(query.limit) || 10, 100);
 

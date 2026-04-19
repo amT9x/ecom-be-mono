@@ -1,5 +1,6 @@
 import {pool} from "../../config/database.js";
 import crypto from "node:crypto";
+import { requestContext } from "../../infrastructure/context/request-context.js";
 
 type FindProductsOptions = {
   cursor?: { created_at: string; id: string } | null;
@@ -29,6 +30,7 @@ export async function findProducts(options: FindProductsOptions) {
     page,
     sortField,
     sortOrder } = options;
+  requestContext.set("repo", "findProducts");
   let query = `
     SELECT *
     FROM products
