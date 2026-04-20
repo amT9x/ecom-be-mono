@@ -16,5 +16,4 @@ db/*.dump
 # Allow migrations & seeds
 # =====================
 !db/migration/**
-!db/init/**
 !db/seed/**
