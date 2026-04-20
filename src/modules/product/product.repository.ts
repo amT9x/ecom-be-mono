@@ -83,7 +83,7 @@ export async function findProductById(id: string) {
 export async function updateProduct(id: string, data: any) {
   const result = await pool.query(
     `UPDATE products
-     SET name=$1, price=$2, stock=$3, updated_at=NOW()
+     SET name=$1, price=$2, stock=$3
      WHERE id=$4
      RETURNING *`,
     [data.name, data.price, data.stock, id]
