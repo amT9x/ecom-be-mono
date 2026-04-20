@@ -1,7 +1,7 @@
 # ===============================
 # CONFIG
 # ===============================
-include .env.example
+include .env
 export
 
 COMPOSE=docker compose -f docker/docker-compose.yml
