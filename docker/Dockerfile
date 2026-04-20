@@ -15,4 +15,4 @@ RUN npm install --omit=dev
 COPY --from=build /app/dist ./dist
 COPY .env ./.env
 EXPOSE 3001
-CMD ["node", "dist/src/server.js"]
+CMD ["node", "dist/app/server.js"]
