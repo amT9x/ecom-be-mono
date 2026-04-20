@@ -10,7 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx watch src/app/server.ts",
     "build": "tsc",
-    "start": "node dist/src/app/server.js"
+    "start": "node dist/app/server.js"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
