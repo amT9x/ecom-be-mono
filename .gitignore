@@ -8,8 +8,7 @@ build/
 .vscode/
 .env.example
 # local database snapshots
-# db/*.sql
-test.sql
+db/*.sql
 db/*.dump
 
 # =====================
