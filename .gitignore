@@ -6,7 +6,7 @@ build/
 *.log
 .idea/
 .vscode/
-.env.example
+.env
 # local database snapshots
 db/dev
 db/*.sql
