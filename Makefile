@@ -1,100 +1,180 @@
 # ===============================
 # CONFIG
 # ===============================
-include .env
+include .env.example
 export
 
-DB_CONTAINER=infra-postgres-1
-PSQL=docker exec -i $(DB_CONTAINER) psql -U $(DB_USER) -d $(DB_NAME)
+COMPOSE=docker compose -f docker/docker-compose.yml
 
-INIT=$(wildcard db/init/*.sql)
+DB_CONTAINER=infra-postgres-1
+PSQL=docker exec -i $(DB_CONTAINER) psql -U $(DB_USER) -d $(DB_NAME) -v ON_ERROR_STOP=1
+
+DB_EXTENSIONS=$(wildcard infra/sql/*extensions.sql)
 MIGRATIONS=$(wildcard db/migration/*.sql)
-SEEDS=$(wildcard db/seed/*.sql)
+SEEDDEVS=$(wildcard db/seed/dev/*.sql)
 TESTS=$(wildcard db/test/*.sql)
 
-# ===============================
-# HELP
-# ===============================
-help:
-	@echo "Available commands:"
-	@echo " make db               -> create database"
-	@echo " make bootstrap-db     -> install extensions"
-	@echo " make migrate          -> run migrations"
-	@echo " make seed             -> seed data"
-	@echo " make test             -> run db tests"
-	@echo " make reset-data       -> truncate data"
-	@echo " make reset-schema     -> recreate schema"
-	@echo " make data-all         -> seed + test"
-	@echo " make all              -> migrate + seed + test"
+# ==================================================
+# INFRA
+# ==================================================
+infra-build:
+	$(COMPOSE) build
 
-# ===============================
-# CREATE DB
-# ===============================
-db:
-	@echo "Create database if not exists..."
-	@docker exec -i $(DB_CONTAINER) \
-	psql -U postgres -d postgres -tc \
-	"SELECT 1 FROM pg_database WHERE datname='$(DB_NAME)'" \
-	| grep -q 1 || \
+infra-up:
+	$(COMPOSE) up -d
+
+infra-down:
+	$(COMPOSE) down
+
+infra-build-up: infra-build infra-up
+
+infra-restart:
+	$(COMPOSE) down
+	$(COMPOSE) up -d
+
+infra-logs:
+	$(COMPOSE) logs -f
+
+infra-shell:
+	docker exec -it $(DB_CONTAINER) bash
+
+# ==================================================
+# DATABASE
+# ==================================================
+
+# CREATE DB USER
+db-create-user:
+	@cat infra/sql/001_create_user.sql | \
 	docker exec -i $(DB_CONTAINER) \
-	psql -U postgres -d postgres \
-	-c "CREATE DATABASE $(DB_NAME) OWNER $(DB_USER);"
+	psql -U postgres \
+	-v ON_ERROR_STOP=1 \
+	-c "SET app.db_user='$(DB_USER)';" \
+	-c "SET app.db_password='$(DB_PASSWORD)';" \
+	-f -
 
-# ===============================
+# CREATE DB
+db-create-db:
+	@cat infra/sql/002_create_database.sql | \
+	docker exec -i $(DB_CONTAINER) \
+	psql -U postgres \
+	-v ON_ERROR_STOP=1 \
+	-v db_name=$(DB_NAME) \
+	-v db_user=$(DB_USER)
+
 # BOOTSTRAP DB EXTENSIONS
-# ===============================
-bootstrap-db:
-	@for file in $(INIT); do \
+db-extensions:
+	@for file in $(DB_EXTENSIONS); do \
 		echo "Running migrate: $$file"; \
 		cat $$file | $(PSQL); \
 	done
 
-# ===============================
 # MIGRATIONS
-# ===============================
-migrate:
+db-migrate:
 	@for file in $(MIGRATIONS); do \
 		echo "Running migrate: $$file"; \
 		cat $$file | $(PSQL); \
 	done
 
-# ===============================
-# SEED DATA
-# ===============================
-seed:
-	@for file in $(SEEDS); do \
+# SEED DEV DATA
+db-seed-dev:
+	@for file in $(SEEDDEVS); do \
 		echo "Running seed: $$file"; \
 		cat $$file | $(PSQL); \
 	done
 
-# ===============================
 # TEST DATABASE
-# ===============================
-test:
+db-test:
 	@for file in $(TESTS); do \
 		echo "Running test: $$file"; \
 		cat $$file | $(PSQL); \
 	done
 
-# ===============================
 # RESET DATA OF TABLE
-# ===============================
-reset-data:
+db-reset-data:
 	@docker exec -i $(DB_CONTAINER) \
 	psql -U $(DB_USER) -d $(DB_NAME) \
 	-c "TRUNCATE TABLE products RESTART IDENTITY CASCADE;"
 
-# ===============================
 # RESET TABLE
-# ===============================
-reset-schema:
+db-reset-schema:
 	@echo "Reset schema $(DB_NAME)..."
 	@docker exec -i $(DB_CONTAINER) \
 	psql -U $(DB_USER) -d $(DB_NAME) \
 	-c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
 
+db-psql:
+	@docker exec -it $(DB_CONTAINER) \
+	psql -U $(DB_USER) -d $(DB_NAME)
+
+db-fresh-data: db-reset-data db-seed-dev
+
+db-bootstrap: db-create-user db-create-db db-extensions db-migrate db-seed-dev
+
+# ==================================================
+# APP
+# ==================================================
+app-install:
+	npm install
+
+app-run:
+	npm run dev
+
+app-build:
+	npm run build
+
+app-start:
+	npm run start
+
+# ==================================================
+# TESTING
+# ==================================================
+
+# ==================================================
+# QUALITY
+# ==================================================
+
+# ==================================================
+# WORKFLOW
+# ==================================================
+bootstrap: db-bootstrap infra-build-up
+reset-table-data: db-fresh-data
+up: infra-up
+down: infra-down
+dev: app-run
+# ci: install lint typecheck test
+
 # ===============================
-# FULL FLOW
+# HELP
 # ===============================
-data-all: seed test
-all: migrate seed test
+help:
+	@echo ""
+	@echo "🚀 CORE DEV"
+	@echo " make dev               <- start app dev"
+	@echo " make up                <- start infra"
+	@echo " make down              <- stop infra"
+	@echo " make bootstrap         <- bootstrap everything"
+	@echo " make reset-table-data  <- reset table data"
+	@echo ""
+# 	@echo "🗄 DATABASE"
+# 	@echo " make db-create-user"
+# 	@echo " make db-create-db"
+# 	@echo " make db-extensions"
+# 	@echo " make db-migrate"
+# 	@echo " make db-seed-dev"
+# 	@echo " make db-test"
+# 	@echo " make db-reset-schema"
+# 	@echo " make db-reset-data"
+# 	@echo " make db-psql"
+# 	@echo ""
+# 	@echo "📦 APP"
+# 	@echo " make app-install"
+# 	@echo " make app-run"
+# 	@echo " make app-build"
+# 	@echo " make app-start"
+# 	@echo ""
+# 	@echo "🧪 TESTING"
+# 	@echo ""
+# 	@echo "🧹 QUALITY"
+# 	@echo ""
+# 	@echo "🔧 DX"
+# 	@echo ""
