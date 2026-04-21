@@ -8,10 +8,8 @@ services:
       dockerfile: docker/Dockerfile
     ports:
       - "3002:3001"
-    environment:
-      NODE_ENV: development
-      APP_NAME: ecom-mono
-      HOST: 0.0.0.0
-      PORT: 3001
-      LOG_LEVEL: info
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - ../.env.docker
     restart: unless-stopped

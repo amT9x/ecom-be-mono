@@ -1,8 +1,18 @@
 # ===============================
 # CONFIG
 # ===============================
-include .env
+ENV ?= local
+
+ENV_FILE = .env.$(ENV)
+
+ifneq (,$(wildcard $(ENV_FILE)))
+include $(ENV_FILE)
 export
+endif
+
+env:
+	@echo "Using ENV=$(ENV)"
+	@echo "Loading $(ENV_FILE)"
 
 COMPOSE=docker compose -f docker/docker-compose.yml
 
@@ -124,6 +134,30 @@ app-build:
 
 app-start:
 	npm run start
+
+# ==================================================
+# DEV EXPERIENCE
+# ==================================================
+
+doctor:
+	@echo "🩺 Checking environment..."
+	@command -v docker >/dev/null || (echo "docker missing"; exit 1)
+	@docker info >/dev/null || (echo "docker not running"; exit 1)
+	@command -v node >/dev/null || (echo "node missing"; exit 1)
+	@test -f .env.local || (echo ".env.local missing"; exit 1)
+	@echo "✅ OK"
+
+clean:
+	@echo "🧹 Cleaning workspace..."
+	rm -rf node_modules dist coverage .cache
+
+check: lint typecheck test-unit
+
+fix:
+	npm run format
+	npm run lint -- --fix
+
+ci: doctor install check test-int
 
 # ==================================================
 # TESTING
