@@ -16,7 +16,7 @@ env:
 
 COMPOSE=docker compose -f docker/docker-compose.yml
 
-DB_CONTAINER=infra-postgres-1
+DB_CONTAINER=infra-wsl2-postgres-1
 PSQL=docker exec -i $(DB_CONTAINER) psql -U $(DB_USER) -d $(DB_NAME) -v ON_ERROR_STOP=1
 
 DB_EXTENSIONS=$(wildcard infra/sql/*extensions.sql)
