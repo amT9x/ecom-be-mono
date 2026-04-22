@@ -1,18 +1,13 @@
 # ===============================
 # CONFIG
 # ===============================
-ENV ?= local
-
-ENV_FILE = .env.$(ENV)
-
-ifneq (,$(wildcard $(ENV_FILE)))
-include $(ENV_FILE)
+ifneq (,$(wildcard .env))
+include .env
 export
 endif
 
-env:
-	@echo "Using ENV=$(ENV)"
-	@echo "Loading $(ENV_FILE)"
+config-env:
+	@test -f .env || (cp .env.example .env && echo "Created .env")
 
 COMPOSE=docker compose -f docker/docker-compose.yml
 
@@ -29,6 +24,9 @@ TESTS=$(wildcard db/test/*.sql)
 # ==================================================
 infra-build:
 	$(COMPOSE) build
+
+infra-build-clean:
+	$(COMPOSE) build --no-cache
 
 infra-up:
 	$(COMPOSE) up -d
@@ -187,10 +185,7 @@ doctor:
 	@printf "Node.js:         "
 	@command -v node >/dev/null && echo "✅ installed" || echo "❌ missing"
 
-	@printf "ENV:             %s\n" "$(ENV)"
-
-	@printf "ENV file:        "
-	@test -f $(ENV_FILE) && echo "✅ $(ENV_FILE)" || echo "❌ $(ENV_FILE) missing"
+	@test -f .env && echo "✅ .env found" || echo "❌ .env missing"
 
 	@echo "=================================="
 
@@ -207,7 +202,7 @@ ci: doctor app-install check test-int
 # ==================================================
 # WORKFLOW
 # ==================================================
-bootstrap: db-bootstrap infra-build-up
+bootstrap: config-env db-bootstrap app-install infra-build-up
 reset-table-data: db-fresh-data
 up: infra-up
 down: infra-down

@@ -1,12 +1,10 @@
-import dotevn from 'dotenv';
+import { env } from '../config/env.js';
 import { connectDB } from '../app/loaders/db.loader.js';
 import { buildApp } from './app.js';
 import { systemLogger } from '../infrastructure/logger/index.js';
 
-dotevn.config({ quiet: true });
-
-const HOST = process.env.HOST || '0.0.0.0';
-const PORT = Number(process.env.PORT) || 3001;
+const HOST = env.HOST || '0.0.0.0';
+const PORT = env.PORT || 3001;
 
 const startServer = async () => {
   await connectDB();

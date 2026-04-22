@@ -1,26 +1,15 @@
 import dotenv from 'dotenv';
 import { z } from 'zod';
-import { systemLogger } from '../infrastructure/logger/system.logger.js';
 
-const APP_ENV = process.env.APP_ENV ?? 'local';
-
-if (!process.env.RUNNING_IN_DOCKER && process.env.NODE_ENV !== 'production') {
-  dotenv.config({
-    path: `.env.${APP_ENV}`,
-    quiet: true,
-  });
-} else if (process.env.RUNNING_IN_DOCKER) {
-  systemLogger.info(
-    { app_env: APP_ENV, status_docker: process.env.RUNNING_IN_DOCKER },
-    'Environment variables loaded',
-  );
-}
+dotenv.config({ quiet: true });
 
 const envSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'test', 'production'])
     .default('development'),
 
+  APP_NAME: z.string(),
+  HOST: z.string(),
   PORT: z.coerce.number(),
 
   DB_HOST: z.string(),
