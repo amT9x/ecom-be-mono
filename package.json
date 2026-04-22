@@ -6,6 +6,10 @@
   "author": "",
   "type": "module",
   "main": "src/app/server.js",
+  "engines": {
+    "node": "24.14.1",
+    "npm": "11.11.0"
+  },
   "scripts": {
     "dev": "tsx watch src/app/server.ts",
     "build": "tsc",
