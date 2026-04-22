@@ -202,7 +202,10 @@ ci: doctor app-install check test-int
 # ==================================================
 # WORKFLOW
 # ==================================================
-bootstrap: config-env db-bootstrap app-install infra-build-up
+bootstrap: config-env
+	@$(MAKE) db-bootstrap
+	@$(MAKE) app-install
+	@$(MAKE) infra-build-up
 reset-table-data: db-fresh-data
 up: infra-up
 down: infra-down
