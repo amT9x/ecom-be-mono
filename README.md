@@ -22,22 +22,22 @@ The system intentionally focuses on backend engineering rather than UI.
 
 This repository provides:
 
-* Application server (Node.js + TypeScript)
-* Infrastructure managed by Docker
-* PostgreSQL + Redis services
-* SQL migration & seed system
-* Makefile-based developer experience (DX)
-* CI-like local workflow
+- Application server (Node.js + TypeScript)
+- Infrastructure managed by Docker
+- PostgreSQL + Redis services
+- SQL migration & seed system
+- Makefile-based developer experience (DX)
+- CI-like local workflow
 
 ---
 
 ## 🧱 Tech Stack
 
-* Node.js (TypeScript)
-* PostgreSQL 16
-* Redis 7
-* Docker Compose
-* Makefile automation
+- Node.js (TypeScript)
+- PostgreSQL 16
+- Redis 7
+- Docker Compose
+- Makefile automation
 
 ---
 
@@ -124,13 +124,13 @@ http://localhost:3001
 
 Bootstrap prepares the entire system:
 
-* Build Docker images
-* Start PostgreSQL + Redis
-* Create db user
-* Create db
-* Install db extensions
-* Run migrations
-* Seed development data
+- Build Docker images
+- Start PostgreSQL + Redis
+- Create db user
+- Create db
+- Install db extensions
+- Run migrations
+- Seed development data
 
 Run this **once after cloning**.
 
@@ -282,11 +282,11 @@ make ci
 
 Includes:
 
-* environment doctor
-* install dependencies
-* lint
-* typecheck
-* integration tests
+- environment doctor
+- install dependencies
+- lint
+- typecheck
+- integration tests
 
 ---
 
