@@ -136,36 +136,73 @@ app-start:
 	npm run start
 
 # ==================================================
+# TESTING
+# ==================================================
+test:
+	npm test
+
+test-unit:
+	npm run test:unit
+
+test-int:
+	npm run test:int
+
+test-watch:
+	npm run test:watch
+
+# ==================================================
+# QUALITY
+# ==================================================
+lint:
+	npm run lint
+
+typecheck:
+	npm run typecheck
+
+format:
+	npm run format
+
+fix:
+	@echo "🔧 Auto fixing..."
+	npm run format
+	npm run lint -- --fix
+
+check: lint typecheck
+
+# ==================================================
 # DEV EXPERIENCE
 # ==================================================
 
 doctor:
-	@echo "🩺 Checking environment..."
-	@command -v docker >/dev/null || (echo "docker missing"; exit 1)
-	@docker info >/dev/null || (echo "docker not running"; exit 1)
-	@command -v node >/dev/null || (echo "node missing"; exit 1)
-	@test -f .env.local || (echo ".env.local missing"; exit 1)
-	@echo "✅ OK"
+	@echo "=================================="
+	@echo "🩺 Environment Doctor"
+	@echo "=================================="
+
+	@printf "Docker CLI:      "
+	@command -v docker >/dev/null && echo "✅ installed" || echo "❌ missing"
+
+	@printf "Docker daemon:   "
+	@docker info >/dev/null 2>&1 && echo "✅ running" || echo "❌ not running"
+
+	@printf "Node.js:         "
+	@command -v node >/dev/null && echo "✅ installed" || echo "❌ missing"
+
+	@printf "ENV:             %s\n" "$(ENV)"
+
+	@printf "ENV file:        "
+	@test -f $(ENV_FILE) && echo "✅ $(ENV_FILE)" || echo "❌ $(ENV_FILE) missing"
+
+	@echo "=================================="
 
 clean:
 	@echo "🧹 Cleaning workspace..."
 	rm -rf node_modules dist coverage .cache
 
-check: lint typecheck test-unit
+reset: clean app-install
+	@echo "♻️ Workspace reset"
 
-fix:
-	npm run format
-	npm run lint -- --fix
-
-ci: doctor install check test-int
-
-# ==================================================
-# TESTING
-# ==================================================
-
-# ==================================================
-# QUALITY
-# ==================================================
+ci: doctor app-install check test-int
+	@echo "✅ CI PASSED"
 
 # ==================================================
 # WORKFLOW
@@ -175,7 +212,6 @@ reset-table-data: db-fresh-data
 up: infra-up
 down: infra-down
 dev: app-run
-# ci: install lint typecheck test
 
 # ===============================
 # HELP
