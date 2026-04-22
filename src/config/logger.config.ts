@@ -1,16 +1,16 @@
-const isProd = process.env.NODE_ENV === "production";
+const isProd = process.env.NODE_ENV === 'production';
 
 export const loggerConfig = isProd
   ? {
-      level: "info",
+      level: 'info',
     }
   : {
-      level: "debug",
+      level: 'debug',
       transport: {
-        target: "pino-pretty",
+        target: 'pino-pretty',
         options: {
           colorize: true,
-          translateTime: "HH:MM:ss.l",
+          translateTime: 'HH:MM:ss.l',
         },
       },
     };

@@ -1,9 +1,9 @@
-import { AsyncLocalStorage } from "node:async_hooks";
+import { AsyncLocalStorage } from 'node:async_hooks';
 
 export type requestContextParams = {
   requestId: string;
   userId?: undefined;
-  actorType: "user";
+  actorType: 'user';
   handler?: string;
   service?: string;
   repo?: string;
@@ -20,7 +20,7 @@ export const requestContext = {
 
   set<K extends keyof requestContextParams>(
     key: K,
-    value: requestContextParams[K]
+    value: requestContextParams[K],
   ) {
     const store = storage.getStore();
     if (store) store[key] = value;

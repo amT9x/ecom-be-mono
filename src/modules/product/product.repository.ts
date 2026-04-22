@@ -1,13 +1,13 @@
-import {pool} from "../../config/database.js";
-import crypto from "node:crypto";
-import { requestContext } from "../../infrastructure/context/request-context.js";
+import { pool } from '../../config/database.js';
+import crypto from 'node:crypto';
+import { requestContext } from '../../infrastructure/context/request-context.js';
 
 type FindProductsOptions = {
   cursor?: { created_at: string; id: string } | null;
   limit: number;
   page?: number;
   sortField: string;
-  sortOrder: "asc" | "desc";
+  sortOrder: 'asc' | 'desc';
 };
 
 export async function createProduct(data: any) {
@@ -17,20 +17,15 @@ export async function createProduct(data: any) {
     `INSERT INTO products(id,name,price,stock)
      VALUES($1,$2,$3,$4)
      RETURNING *`,
-    [id, data.name, data.price, data.stock || 0]
+    [id, data.name, data.price, data.stock || 0],
   );
 
   return result.rows[0];
 }
 
 export async function findProducts(options: FindProductsOptions) {
-  const {
-    cursor,
-    limit,
-    page,
-    sortField,
-    sortOrder } = options;
-  requestContext.set("repo", "findProducts");
+  const { cursor, limit, page, sortField, sortOrder } = options;
+  requestContext.set('repo', 'findProducts');
   let query = `
     SELECT *
     FROM products
@@ -40,7 +35,7 @@ export async function findProducts(options: FindProductsOptions) {
 
   // CURSOR PAGINATION
   if (cursor) {
-    const operator = sortOrder === "desc" ? "<" : ">";
+    const operator = sortOrder === 'desc' ? '<' : '>';
 
     query += `
       WHERE (${sortField}, id) ${operator} ($1, $2)
@@ -72,10 +67,7 @@ export async function findProducts(options: FindProductsOptions) {
 }
 
 export async function findProductById(id: string) {
-  const result = await pool.query(
-    `SELECT * FROM products WHERE id=$1`,
-    [id]
-  );
+  const result = await pool.query(`SELECT * FROM products WHERE id=$1`, [id]);
 
   return result.rows[0];
 }
@@ -86,7 +78,7 @@ export async function updateProduct(id: string, data: any) {
      SET name=$1, price=$2, stock=$3
      WHERE id=$4
      RETURNING *`,
-    [data.name, data.price, data.stock, id]
+    [data.name, data.price, data.stock, id],
   );
 
   return result.rows[0];

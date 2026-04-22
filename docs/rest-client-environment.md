@@ -6,8 +6,8 @@ Dự án sử dụng **VSCode REST Client** để thử nghiệm REST API trực
 
 REST Client cho phép:
 
-* lưu request chung trong source code
-* chuyển nhanh giữa các môi trường (`local`, `staging`, `production`)
+- lưu request chung trong source code
+- chuyển nhanh giữa các môi trường (`local`, `staging`, `production`)
 
 ---
 
@@ -108,9 +108,9 @@ Nhấn **Send Request** để gọi API.
 
 ## 6. Lưu ý quan trọng
 
-* Environment nằm trong **User Settings**, không commit vào git.
-* Mỗi developer có thể cấu hình `baseUrl` riêng.
-* Không lưu token production vào repository.
+- Environment nằm trong **User Settings**, không commit vào git.
+- Mỗi developer có thể cấu hình `baseUrl` riêng.
+- Không lưu token production vào repository.
 
 ---
 
@@ -118,10 +118,10 @@ Nhấn **Send Request** để gọi API.
 
 ### Không thấy Environment
 
-* đảm bảo extension REST Client đã cài
-* reload VSCode
-* mở file `.http`
-* kiểm tra JSON syntax hợp lệ
+- đảm bảo extension REST Client đã cài
+- reload VSCode
+- mở file `.http`
+- kiểm tra JSON syntax hợp lệ
 
 ---
 
@@ -129,6 +129,6 @@ Nhấn **Send Request** để gọi API.
 
 Sử dụng REST Client thay cho Postman trong quá trình phát triển backend để:
 
-* version control API request
-* debug nhanh
-* onboarding developer dễ dàng
+- version control API request
+- debug nhanh
+- onboarding developer dễ dàng

@@ -22,7 +22,7 @@ Injected fields:
 In any layer (handler / service / repository):
 
 ```ts
-import { appLogger } from "@/infrastructure/logger";
+import { appLogger } from '@/infrastructure/logger';
 ```
 
 ---
@@ -30,9 +30,9 @@ import { appLogger } from "@/infrastructure/logger";
 ### 2. Write logs normally
 
 ```ts
-appLogger.info("call service");   // handler
-appLogger.info("fetch repo");     // service
-appLogger.info("query db");       // repository
+appLogger.info('call service'); // handler
+appLogger.info('fetch repo'); // service
+appLogger.info('query db'); // repository
 ```
 
 No need to access requestContext manually.

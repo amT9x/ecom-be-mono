@@ -1,25 +1,21 @@
-import * as repo from "./product.repository.js";
-import {
-  encodeCursor,
-  decodeCursor,
-} from "../../shared/pagination/cursor.js";
-import { requestContext } from "../../infrastructure/context/request-context.js";
+import * as repo from './product.repository.js';
+import { encodeCursor, decodeCursor } from '../../shared/pagination/cursor.js';
+import { requestContext } from '../../infrastructure/context/request-context.js';
 
 export async function createProductService(body: any) {
   return repo.createProduct(body);
 }
 
 export async function getProductsService(query: any) {
-  requestContext.set("service", "getProductsService");
+  requestContext.set('service', 'getProductsService');
   // LIMIT
   const limit = Math.min(Number(query.limit) || 10, 100);
 
   // SORT
-  const sortRaw = query.sort || "created_at.desc";
-  const [sortField, sortOrderRaw] = sortRaw.split(".");
+  const sortRaw = query.sort || 'created_at.desc';
+  const [sortField, sortOrderRaw] = sortRaw.split('.');
 
-  const sortOrder =
-    sortOrderRaw === "asc" ? "asc" : "desc";
+  const sortOrder = sortOrderRaw === 'asc' ? 'asc' : 'desc';
 
   // CURSOR (ENCODED)
   let cursor = null;
@@ -29,9 +25,7 @@ export async function getProductsService(query: any) {
   }
 
   // PAGE
-  const page = query.page
-    ? Number(query.page)
-    : undefined;
+  const page = query.page ? Number(query.page) : undefined;
 
   // FETCH
   const rows = await repo.findProducts({

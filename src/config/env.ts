@@ -9,15 +9,17 @@ if (!process.env.RUNNING_IN_DOCKER && process.env.NODE_ENV !== 'production') {
     path: `.env.${APP_ENV}`,
     quiet: true,
   });
-} else if(process.env.RUNNING_IN_DOCKER) {
+} else if (process.env.RUNNING_IN_DOCKER) {
   systemLogger.info(
-    { app_env: APP_ENV , status_docker: process.env.RUNNING_IN_DOCKER },
-    'Environment variables loaded'
+    { app_env: APP_ENV, status_docker: process.env.RUNNING_IN_DOCKER },
+    'Environment variables loaded',
   );
 }
 
 const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  NODE_ENV: z
+    .enum(['development', 'test', 'production'])
+    .default('development'),
 
   PORT: z.coerce.number(),
 
