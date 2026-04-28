@@ -11,6 +11,7 @@ services:
     env_file:
       - ../.env
     environment:
+      - HOST=0.0.0.0
       - DB_HOST=postgres
     networks:
       - ecom-network
