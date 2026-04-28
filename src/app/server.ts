@@ -4,7 +4,7 @@ import { buildApp } from './app.js';
 import { systemLogger } from '../infrastructure/logger/index.js';
 
 const HOST = env.HOST || '0.0.0.0';
-const PORT = env.PORT || 3001;
+const PORT = env.PORT || 3000;
 
 const startServer = async () => {
   await connectDB();

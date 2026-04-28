@@ -49,7 +49,7 @@ Thêm đoạn sau vào file settings:
 ```json
 "rest-client.environmentVariables": {
   "local": {
-    "baseUrl": "http://localhost:3001"
+    "baseUrl": "http://localhost:3000"
   },
   "staging": {
     "baseUrl": "https://staging.api.com"
@@ -90,7 +90,7 @@ No Environment → chọn local
 Sau khi chọn:
 
 ```
-{{baseUrl}} = http://localhost:3001
+{{baseUrl}} = http://localhost:3000
 ```
 
 ---
