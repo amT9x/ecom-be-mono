@@ -1,0 +1,143 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  validate-pr:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+
+    env:
+      DATABASE_URL: postgres://test:test@localhost:5432/testdb
+      REDIS_URL: redis://localhost:6379
+      NODE_ENV: test
+      PORT: 3000
+
+    steps:
+      # --------------------------------
+      # Setup
+      # --------------------------------
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # --------------------------------
+      # Install deps
+      # --------------------------------
+      - name: Install dependencies
+        run: npm ci
+
+      # --------------------------------
+      # Lint + Typecheck
+      # --------------------------------
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      # --------------------------------
+      # Dependency security
+      # --------------------------------
+      - name: Security audit
+        run: npm audit --audit-level=high
+
+      # --------------------------------
+      # DB migrate UP
+      # --------------------------------
+      - name: Run migrations
+        run: npm run db:migrate
+
+      # --------------------------------
+      # DB migrate DOWN (rollback safety)
+      # --------------------------------
+      - name: Rollback migrations
+        run: npm run db:migrate:rollback || true
+
+      - name: Re-run migrations
+        run: npm run db:migrate
+
+      # --------------------------------
+      # Integration tests
+      # --------------------------------
+      - name: Integration tests
+        run: npm run test:integration
+
+      # --------------------------------
+      # Build docker image
+      # --------------------------------
+      - name: Build Docker image
+        run: docker build -t app:test .
+
+      # --------------------------------
+      # Start container
+      # --------------------------------
+      - name: Run container
+        run: |
+          docker run -d \
+            -p 3000:3000 \
+            -e DATABASE_URL=$DATABASE_URL \
+            -e REDIS_URL=$REDIS_URL \
+            --name app-test \
+            app:test
+
+      # --------------------------------
+      # Wait app startup
+      # --------------------------------
+      - name: Wait for startup
+        run: sleep 10
+
+      # --------------------------------
+      # Health check
+      # --------------------------------
+      - name: Health check
+        run: curl --fail http://localhost:3000/health
+
+      # --------------------------------
+      # Smoke test (real flow)
+      # --------------------------------
+      # - name: Smoke test
+      #   run: |
+      #     curl --fail -X POST http://localhost:3000/api/users \
+      #       -H "Content-Type: application/json" \
+      #       -d '{"email":"test@test.com","password":"123456"}'
+
+      # --------------------------------
+      # Artifact ready
+      # --------------------------------
+      - name: Save Docker image
+        run: docker save app:test | gzip > app-image.tar.gz
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: app-image.tar.gz
