@@ -5,6 +5,11 @@ ifneq (,$(wildcard .env))
 include .env
 export
 endif
+# APP_NAME=ecommerce-api
+# DOCKER_USER=your_dockerhub_username
+# IMAGE=$(DOCKER_USER)/$(APP_NAME):latest
+# VPS_USER=root
+# VPS_HOST=your_vps_ip
 
 config-env:
 	@test -f .env || (cp .env.example .env && echo "Created .env")
@@ -46,6 +51,14 @@ infra-logs:
 infra-shell:
 	docker exec -it $(DB_CONTAINER) bash
 
+infra-build-app-test:
+	@echo "==> Build app test..."
+	docker build \
+	-f docker/Dockerfile \
+	-t app:test \
+	.
+	@echo "✅ Build app test... done"
+
 # ==================================================
 # DATABASE
 # ==================================================
@@ -78,10 +91,12 @@ db-extensions:
 
 # MIGRATIONS
 db-migrate:
+	@echo "==> Running migrations..."
 	@for file in $(MIGRATIONS); do \
 		echo "Running migrate: $$file"; \
 		cat $$file | $(PSQL); \
 	done
+	@echo "✅ Finished migrations..."
 
 # SEED DEV DATA
 db-seed-dev:
@@ -124,14 +139,59 @@ db-bootstrap: db-create-user db-create-db db-extensions db-migrate db-seed-dev
 app-install:
 	npm install
 
+app-install-ci:
+	@echo "==> Install dependencies..."
+	npm ci
+	@echo "✅ Dependencies installed"
+
+app-audit:
+	@echo "==> Audit dependencies..."
+	npm audit --audit-level=high
+	@echo "✅ Audit passed"
+
 app-run:
 	npm run dev
 
 app-build:
+	@echo "==> Build app..."
 	npm run build
+	@echo "✅ Build app passed"
 
 app-start:
 	npm run start
+
+run-postgres:
+	docker run -d \
+  --name postgres \
+  --network ecom-network \
+  -e POSTGRES_USER=ecom_app \
+  -e POSTGRES_PASSWORD=devpw \
+  -e POSTGRES_DB=ecom_mono \
+  postgres:16
+
+app-health-check:
+	@echo "==> App Health check..."
+	@echo "Run container"
+	docker rm -f app-test || true
+
+	docker run -d \
+		--network ecom-network \
+		--env-file .env \
+		-e DB_HOST=postgres \
+		-e HOST=0.0.0.0 \
+		-p 3000:3000 \
+		--name app-test \
+		app:test
+
+	@echo "Wait startup"
+	sleep 10
+
+	@echo "Health check"
+	curl --fail http://localhost:3000/health
+
+	@echo "Cleanup"
+	docker rm -f app-test
+	@echo "✅ App Health check passed"
 
 # ==================================================
 # TESTING
@@ -143,7 +203,9 @@ test-unit:
 	npm run test:unit
 
 test-int:
+	@echo "==> Run integration test..."
 	npm run test:int
+	@echo "✅ Integration test passed"
 
 test-watch:
 	npm run test:watch
@@ -152,10 +214,14 @@ test-watch:
 # QUALITY
 # ==================================================
 lint:
+	@echo "==> Lint"
 	npm run lint
+	@echo "✅ Lint passed"
 
 typecheck:
+	@echo "==> Typecheck"
 	npm run typecheck
+	@echo "✅ Typecheck passed"
 
 format:
 	npm run format
@@ -177,16 +243,18 @@ doctor:
 	@echo "=================================="
 
 	@printf "Docker CLI:      "
-	@command -v docker >/dev/null && echo "✅ installed" || echo "❌ missing"
+	@command -v docker >/dev/null && echo "Installed" || echo "❌ missing"
 
 	@printf "Docker daemon:   "
-	@docker info >/dev/null 2>&1 && echo "✅ running" || echo "❌ not running"
+	@docker info >/dev/null 2>&1 && echo "Running" || echo "❌ not running"
 
 	@printf "Node.js:         "
-	@command -v node >/dev/null && echo "✅ installed" || echo "❌ missing"
+	@command -v node >/dev/null && echo "Installed" || echo "❌ missing"
 
-	@test -f .env && echo "✅ .env found" || echo "❌ .env missing"
+	@printf ".env file:       "
+	@test -f .env && echo "Found" || echo "❌ .env missing"
 
+	@echo "✅ Environment doctor passed"
 	@echo "=================================="
 
 clean:
@@ -196,7 +264,31 @@ clean:
 reset: clean app-install
 	@echo "♻️ Workspace reset"
 
-ci: doctor app-install check test-int
+# deploy:
+# 	docker login
+# 	docker build -t $(IMAGE) .
+# 	docker push $(IMAGE)
+
+# 	ssh $(VPS_USER)@$(VPS_HOST) "\
+# 		docker pull $(IMAGE) && \
+# 		docker stop $(APP_NAME) || true && \
+# 		docker rm $(APP_NAME) || true && \
+# 		docker run -d \
+# 			--name $(APP_NAME) \
+# 			-p 3000:3000 \
+# 			$(IMAGE)"
+
+ci:
+	@$(MAKE) doctor
+	@$(MAKE) app-install-ci
+	@$(MAKE) lint
+	@$(MAKE) typecheck
+	@$(MAKE) app-audit
+	@$(MAKE) db-migrate
+	@$(MAKE) test-int
+	@$(MAKE) app-build
+	@$(MAKE) infra-build-app-test
+	@$(MAKE) app-health-check
 	@echo "✅ CI PASSED"
 
 # ==================================================
