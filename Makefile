@@ -297,27 +297,36 @@ app-health-check-dev:
 	@echo "✅ App Health check passed"
 
 app-wait-ready-ci:
-	@echo "==> Waiting app ready..."
+	@echo "==> Waiting container healthy..."
 	@for i in $$(seq 1 30); do \
-		if curl -sf http://localhost:3000/health >/dev/null; then \
-			echo "✅ Waiting app ready...done"; \
+		STATUS=$$(docker inspect --format='{{.State.Health.Status}}' app-test 2>/dev/null || echo "starting"); \
+		if [ "$$STATUS" = "healthy" ]; then \
+			echo "✅ Waiting container healthy...done"; \
 			exit 0; \
 		fi; \
-		echo "App not ready yet..."; \
+		echo "Status: $$STATUS"; \
 		sleep 2; \
 	done; \
-	echo "❌ App failed to start"; \
+	echo "❌ App not healthy"; \
+	docker logs app-test; \
 	exit 1
 
 app-health-check-ci:
-	@echo "Health check..."
-	@for i in $$(seq 1 15); do \
-		curl -f http://localhost:3000/health && exit 0; \
+	@echo "==> Health check..."
+	@for i in $$(seq 1 30); do \
+		STATUS=$$(docker inspect --format='{{.State.Health.Status}}' app-test 2>/dev/null || echo "starting"); \
+		RESP=$$(curl -sf http://localhost:3000/health 2>/dev/null); \
+		if [ "$$STATUS" = "healthy" ] && [ "$$RESP" != "" ]; then \
+			echo "$$RESP"; \
+			echo "✅ Health check...done"; \
+			exit 0; \
+		fi; \
+		echo "⏳ Status: $$STATUS ($$i/30)"; \
 		sleep 2; \
 	done; \
+	echo "❌ Health check failed"; \
+	docker logs app-test || true; \
 	exit 1
-
-	@echo "✅ Health check...done"
 
 # ==================================================
 # TESTING
