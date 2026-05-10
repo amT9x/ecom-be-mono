@@ -437,6 +437,7 @@ ci:
 
 	@$(MAKE) dk-build-app-test-ci
 	@$(MAKE) dk-run-test-app-ci
+	@$(MAKE) app-wait-ready-ci
 
 	@$(MAKE) dk-debug-app-test-ci
 
@@ -445,7 +446,6 @@ ci:
 
 	@$(MAKE) test-int
 
-	@$(MAKE) app-wait-ready-ci
 	@$(MAKE) app-health-check-ci
 
 	@$(MAKE) dk-clean-app-test-ci
