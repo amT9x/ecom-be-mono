@@ -11,11 +11,11 @@ CREATE TABLE IF NOT EXISTS products (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
 );
 
-CREATE INDEX idx_products_created_at
+CREATE INDEX IF NOT EXISTS idx_products_created_at
 ON products(created_at DESC);
 
-CREATE INDEX idx_products_cursor
+CREATE INDEX IF NOT EXISTS idx_products_cursor
 ON products (created_at DESC, id DESC);
 
-CREATE INDEX idx_products_active
+CREATE INDEX IF NOT EXISTS idx_products_active
 ON products(is_active);
