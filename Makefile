@@ -78,12 +78,17 @@ dk-run-test-app-ci:
 	docker run -d \
 	$(if $(NETWORK),--network $(NETWORK),) \
 	--env-file .env \
-	-e HOST=0.0.0.0 \
 	-p 3000:3000 \
 	--name app-test \
 	app:test
 
-	sleep 5
+	@echo "Waiting container..."
+	@for i in {1..10}; do \
+		docker inspect -f '{{.State.Running}}' app-test | grep true && break; \
+		sleep 1; \
+	done
+
+	docker inspect -f '{{.State.Running}}' app-test
 
 	@echo "✅ Run test app... done"
 
@@ -101,6 +106,18 @@ dk-clean-app-test-ci:
 # ==================================================
 # DATABASE
 # ==================================================
+
+db-wait-db-ci:
+	@echo "==> Waiting for postgres..."
+	@POSTGRES_ID=$$(docker ps \
+		--filter "ancestor=postgres:16" \
+		--format "{{.ID}}"); \
+	until [ "$$(docker inspect \
+		-f '{{.State.Health.Status}}' $$POSTGRES_ID)" = "healthy" ]; do \
+		echo "Postgres not healthy yet..."; \
+		sleep 1; \
+	done
+	@echo "✅ Waiting for postgres...done. Postgres is ready"
 
 # CREATE DB USER
 db-create-user:
@@ -196,7 +213,13 @@ db-migrate:
 	node scripts/migrate.js
 
 db-migrate-ci:
-	docker exec app-test node scripts/migrate.js
+	@echo "==> Run migrations..."
+	docker run -d \
+	$(if $(NETWORK),--network $(NETWORK),) \
+	--env-file .env \
+	app:test \
+	node scripts/migrate.js
+	@echo "✅ Run migrations...done"
 
 db-reset:
 	$(MAKE) db-drop-db
@@ -267,11 +290,24 @@ app-health-check-dev:
 	sleep 10
 
 	@echo "Health check"
-	curl --fail http://localhost:3000/health
+	curl --fail http://app-test:3000/health
 
 	@echo "Cleanup"
 	docker rm -f app-test
 	@echo "✅ App Health check passed"
+
+app-wait-ready-ci:
+	@echo "==> Waiting app ready..."
+	@for i in $$(seq 1 30); do \
+		if curl -sf http://localhost:3000/health >/dev/null; then \
+			echo "✅ Waiting app ready...done"; \
+			exit 0; \
+		fi; \
+		echo "App not ready yet..."; \
+		sleep 2; \
+	done; \
+	echo "❌ App failed to start"; \
+	exit 1
 
 app-health-check-ci:
 	@echo "Health check..."
@@ -402,11 +438,14 @@ ci:
 	@$(MAKE) dk-build-app-test-ci
 	@$(MAKE) dk-run-test-app-ci
 
+	@$(MAKE) dk-debug-app-test-ci
+
+	@$(MAKE) db-wait-db-ci
 	@$(MAKE) db-migrate-ci
 
 	@$(MAKE) test-int
 
-	@$(MAKE) wait-10s
+	@$(MAKE) app-wait-ready-ci
 	@$(MAKE) app-health-check-ci
 
 	@$(MAKE) dk-clean-app-test-ci
