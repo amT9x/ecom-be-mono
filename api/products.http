@@ -1,10 +1,13 @@
 ######################## PRODUCT #############################
 @page=3
 @cursor = eyJjcmVhdGVkX2F0IjoiMjAyNi0wNC0xN1QwNzo1NzoyOC41MDFaIiwiaWQiOiJhMjE0ZTZmZi03ZGFmLTQ3ZWItOWM4OC00Y2FiMzNmOGI4YTkifQ==
-@id = 
+@id =
 
 ### GET
 GET {{baseUrl}}/products
+
+### Get a product
+GET {{baseUrl}}/products/{{id}}
 
 ### default pagination
 GET {{baseUrl}}/products
@@ -36,3 +39,10 @@ Content-Type: application/json
 
 ### DELETE
 DELETE {{baseUrl}}/products/{{id}}
+
+### TEST -------------------------------
+### Limit fail
+GET {{baseUrl}}/products?limit=abc
+
+### Limit true
+GET {{baseUrl}}/products?limit=10
