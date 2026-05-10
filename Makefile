@@ -15,6 +15,7 @@ config-env:
 	@test -f .env || (cp .env.example .env && echo "Created .env")
 
 COMPOSE=docker compose -f docker/docker-compose.yml
+NETWORK := $(shell docker network ls --format '{{.Name}}' | grep act || true)
 
 DB_CONTAINER=infra-wsl2-postgres-1
 PSQL=docker exec -i $(DB_CONTAINER) psql -U $(DB_USER) -d $(DB_NAME) -v ON_ERROR_STOP=1
@@ -75,7 +76,7 @@ dk-run-test-app-ci:
 	docker rm -f app-test || true
 
 	docker run -d \
-	--network $$(docker network ls --format '{{.Name}}' | grep act) \
+	$(if $(NETWORK),--network $(NETWORK),) \
 	--env-file .env \
 	-e HOST=0.0.0.0 \
 	-p 3000:3000 \
