@@ -13,5 +13,7 @@ ENV NODE_ENV=production
 COPY package*.json ./
 RUN npm install --omit=dev
 COPY --from=build /app/dist ./dist
+COPY scripts ./scripts
+COPY db ./db
 EXPOSE 3000
 CMD ["node", "dist/app/server.js"]

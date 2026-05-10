@@ -24,40 +24,78 @@ MIGRATIONS=$(wildcard db/migration/*.sql)
 SEEDDEVS=$(wildcard db/seed/dev/*.sql)
 TESTS=$(wildcard db/test/*.sql)
 
+create-env-ci:
+	@echo "==> Create env file..."
+	cp .env.ci .env
+	@echo "✅ Create env file... done"
+
 # ==================================================
-# INFRA
+# DOCKER
 # ==================================================
-infra-build:
+dk-build:
 	$(COMPOSE) build
 
-infra-build-clean:
+dk-build-clean:
 	$(COMPOSE) build --no-cache
 
-infra-up:
+dk-up:
 	$(COMPOSE) up -d
 
-infra-down:
+dk-down:
 	$(COMPOSE) down
 
-infra-build-up: infra-build infra-up
+dk-build-up: dk-build dk-up
 
-infra-restart:
+dk-restart:
 	$(COMPOSE) down
 	$(COMPOSE) up -d
 
-infra-logs:
+dk-logs:
 	$(COMPOSE) logs -f
 
-infra-shell:
+dk-shell:
 	docker exec -it $(DB_CONTAINER) bash
 
-infra-build-app-test:
+dk-build-app-test:
 	@echo "==> Build app test..."
 	docker build \
 	-f docker/Dockerfile \
 	-t app:test \
 	.
 	@echo "✅ Build app test... done"
+
+dk-build-app-test-ci:
+	@echo "==> Build app test..."
+	docker build -f docker/Dockerfile -t app:test .
+	@echo "✅ Build app test... done"
+
+dk-run-test-app-ci:
+	@echo "==> Run test app..."
+
+	docker rm -f app-test || true
+
+	docker run -d \
+	--network $$(docker network ls --format '{{.Name}}' | grep act) \
+	--env-file .env \
+	-e HOST=0.0.0.0 \
+	-p 3000:3000 \
+	--name app-test \
+	app:test
+
+	sleep 5
+
+	@echo "✅ Run test app... done"
+
+dk-debug-app-test-ci:
+	@echo "==> Debug app test..."
+	docker ps -a
+	docker logs app-test || true
+	@echo "✅ Debug app test... done"
+
+dk-clean-app-test-ci:
+	@echo "==> Clean app test..."
+	docker rm -f app-test || true
+	@echo "✅ Clean app test... done"
 
 # ==================================================
 # DATABASE
@@ -73,14 +111,38 @@ db-create-user:
 	-c "SET app.db_password='$(DB_PASSWORD)';" \
 	-f -
 
-# CREATE DB
-db-create-db:
+# CREATE DB DEV
+db-create-db-dev:
+	@echo "==> Create database $(DB_NAME)"
 	@cat infra/sql/002_create_database.sql | \
 	docker exec -i $(DB_CONTAINER) \
 	psql -U postgres \
 	-v ON_ERROR_STOP=1 \
 	-v db_name=$(DB_NAME) \
 	-v db_user=$(DB_USER)
+	@echo "✅ Create database $(DB_NAME) done"
+
+# CREATE DB
+db-create-db:
+	@echo "==> Create database $(DB_NAME)"
+
+	docker exec -i $(DB_CONTAINER) \
+	psql -U postgres -d postgres \
+	-c "CREATE DATABASE $(DB_NAME) OWNER $(DB_USER);"
+
+	@echo "✅ Create database $(DB_NAME) done"
+
+# DROP DB
+db-drop-db:
+	@echo "==> Drop database $(DB_NAME)"
+	docker exec -i $(DB_CONTAINER) \
+	psql -U postgres -d postgres \
+	-c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='$(DB_NAME)' AND pid <> pg_backend_pid();"
+
+	docker exec -i $(DB_CONTAINER) \
+	psql -U postgres -d postgres \
+	-c "DROP DATABASE IF EXISTS $(DB_NAME);"
+	@echo "✅ Drop database $(DB_NAME) done"
 
 # BOOTSTRAP DB EXTENSIONS
 db-extensions:
@@ -90,7 +152,7 @@ db-extensions:
 	done
 
 # MIGRATIONS
-db-migrate:
+db-migrate-dev:
 	@echo "==> Running migrations..."
 	@for file in $(MIGRATIONS); do \
 		echo "Running migrate: $$file"; \
@@ -129,14 +191,26 @@ db-psql:
 	@docker exec -it $(DB_CONTAINER) \
 	psql -U $(DB_USER) -d $(DB_NAME)
 
+db-migrate:
+	node scripts/migrate.js
+
+db-migrate-ci:
+	docker exec app-test node scripts/migrate.js
+
+db-reset:
+	$(MAKE) db-drop-db
+	$(MAKE) db-create-db
+	$(MAKE) db-migrate
+	$(MAKE) db-seed-dev
+
 db-fresh-data: db-reset-data db-seed-dev
 
-db-bootstrap: db-create-user db-create-db db-extensions db-migrate db-seed-dev
+db-bootstrap: db-create-user db-create-db db-extensions db-migrate-dev db-seed-dev
 
 # ==================================================
 # APP
 # ==================================================
-app-install:
+app-install-npm:
 	npm install
 
 app-install-ci:
@@ -144,10 +218,15 @@ app-install-ci:
 	npm ci
 	@echo "✅ Dependencies installed"
 
-app-audit:
-	@echo "==> Audit dependencies..."
-	-0npm audit --audit-level=high || true
-	@echo "✅ Audit passed"
+app-audit-high:
+	@echo "==> Security audit (HIGH)"
+	npm audit --audit-level=high || true
+	@echo "✅ Security audit high...done. No high vulnerabilities"
+
+app-audit-critical:
+	@echo "==> Security audit (CRITICAL)"
+	npm audit --audit-level=critical
+	@echo "✅ Security audit ...done. No critical vulnerabilities"
 
 app-run:
 	npm run dev
@@ -155,7 +234,7 @@ app-run:
 app-build:
 	@echo "==> Build app..."
 	npm run build
-	@echo "✅ Build app passed"
+	@echo "✅ Build app...done"
 
 app-start:
 	npm run start
@@ -169,7 +248,7 @@ run-postgres:
   -e POSTGRES_DB=ecom_mono \
   postgres:16
 
-app-health-check:
+app-health-check-dev:
 	@echo "==> App Health check..."
 	@echo "Run container"
 	docker rm -f app-test || true
@@ -193,6 +272,16 @@ app-health-check:
 	docker rm -f app-test
 	@echo "✅ App Health check passed"
 
+app-health-check-ci:
+	@echo "Health check..."
+	@for i in $$(seq 1 15); do \
+		curl -f http://localhost:3000/health && exit 0; \
+		sleep 2; \
+	done; \
+	exit 1
+
+	@echo "✅ Health check...done"
+
 # ==================================================
 # TESTING
 # ==================================================
@@ -203,9 +292,9 @@ test-unit:
 	npm run test:unit
 
 test-int:
-	@echo "==> Run integration test..."
+	@echo "==> Integration test..."
 	npm run test:int
-	@echo "✅ Integration test passed"
+	@echo "✅ Integration test...done"
 
 test-watch:
 	npm run test:watch
@@ -214,14 +303,14 @@ test-watch:
 # QUALITY
 # ==================================================
 lint:
-	@echo "==> Lint"
+	@echo "==> Lint..."
 	npm run lint
-	@echo "✅ Lint passed"
+	@echo "✅ Lint...done"
 
 typecheck:
-	@echo "==> Typecheck"
+	@echo "==> Typecheck..."
 	npm run typecheck
-	@echo "✅ Typecheck passed"
+	@echo "✅ Typecheck...done"
 
 format:
 	npm run format
@@ -237,7 +326,7 @@ check: lint typecheck
 # DEV EXPERIENCE
 # ==================================================
 
-doctor:
+doctor-dev:
 	@echo "=================================="
 	@echo "🩺 Environment Doctor"
 	@echo "=================================="
@@ -257,12 +346,24 @@ doctor:
 	@echo "✅ Environment doctor passed"
 	@echo "=================================="
 
-clean:
+doctor-ci:
+	@echo "==> CI doctor..."
+	@node -v
+	@npm -v
+	@docker --version
+	@echo "✅ CI doctor...done"
+
+clean-node:
 	@echo "🧹 Cleaning workspace..."
 	rm -rf node_modules dist coverage .cache
 
-reset: clean app-install
+reset-node: clean app-install-npm
 	@echo "♻️ Workspace reset"
+
+wait-10s:
+	@echo "Waiting 10 seconds..."
+	sleep 10
+	@echo "✅ Waiting 10 seconds... done"
 
 # deploy:
 # 	docker login
@@ -278,17 +379,37 @@ reset: clean app-install
 # 			-p 3000:3000 \
 # 			$(IMAGE)"
 
-ci:
-	@$(MAKE) doctor
-	@$(MAKE) app-install-ci
+pre-commit:
+	@echo "==> Precommit..."
 	@$(MAKE) lint
 	@$(MAKE) typecheck
-	@$(MAKE) app-audit
-	@$(MAKE) db-migrate
-	@$(MAKE) test-int
+	@echo "✅ Precommit...done"
+
+pre-push: pre-commit db-migrate-dev test-int
+
+ci:
+	@$(MAKE) doctor-ci
+	@$(MAKE) create-env-ci
+	@$(MAKE) app-install-ci
+
+	@$(MAKE) pre-commit
+	@$(MAKE) app-audit-high
+	@$(MAKE) app-audit-critical
+
 	@$(MAKE) app-build
-	@$(MAKE) infra-build-app-test
-	@$(MAKE) app-health-check
+
+	@$(MAKE) dk-build-app-test-ci
+	@$(MAKE) dk-run-test-app-ci
+
+	@$(MAKE) db-migrate-ci
+
+	@$(MAKE) test-int
+
+	@$(MAKE) wait-10s
+	@$(MAKE) app-health-check-ci
+
+	@$(MAKE) dk-clean-app-test-ci
+
 	@echo "✅ CI PASSED"
 
 # ==================================================
@@ -296,11 +417,11 @@ ci:
 # ==================================================
 bootstrap: config-env
 	@$(MAKE) db-bootstrap
-	@$(MAKE) app-install
-	@$(MAKE) infra-build-up
+	@$(MAKE) app-install-npm
+	@$(MAKE) dk-build-up
 reset-table-data: db-fresh-data
-up: infra-up
-down: infra-down
+up: dk-up
+down: dk-down
 dev: app-run
 
 # ===============================
@@ -310,8 +431,8 @@ help:
 	@echo ""
 	@echo "🚀 CORE DEV"
 	@echo " make dev               <- start app dev"
-	@echo " make up                <- start infra"
-	@echo " make down              <- stop infra"
+	@echo " make up                <- start dk"
+	@echo " make down              <- stop dk"
 	@echo " make bootstrap         <- bootstrap everything"
 	@echo " make reset-table-data  <- reset table data"
 	@echo ""
@@ -319,7 +440,7 @@ help:
 # 	@echo " make db-create-user"
 # 	@echo " make db-create-db"
 # 	@echo " make db-extensions"
-# 	@echo " make db-migrate"
+# 	@echo " make db-migrate-dev"
 # 	@echo " make db-seed-dev"
 # 	@echo " make db-test"
 # 	@echo " make db-reset-schema"
