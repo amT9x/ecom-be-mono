@@ -67,9 +67,13 @@ export async function findProducts(options: FindProductsOptions) {
 }
 
 export async function findProductById(id: string) {
-  const result = await pool.query(`SELECT * FROM products WHERE id=$1`, [id]);
+  try {
+    const result = await pool.query(`SELECT * FROM products WHERE id=$1`, [id]);
 
-  return result.rows[0];
+    return result.rows[0];
+  } catch (error) {
+    throw error;
+  }
 }
 
 export async function updateProduct(id: string, data: any) {
