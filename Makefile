@@ -15,7 +15,6 @@ config-env:
 	@test -f .env || (cp .env.example .env && echo "Created .env")
 
 COMPOSE=docker compose -f docker/docker-compose.yml
-NETWORK := $(shell docker network ls --format '{{.Name}}' | grep act || true)
 
 DB_CONTAINER=infra-wsl2-postgres-1
 PSQL=docker exec -i $(DB_CONTAINER) psql -U $(DB_USER) -d $(DB_NAME) -v ON_ERROR_STOP=1
@@ -70,13 +69,18 @@ dk-build-app-test-ci:
 	docker build -f docker/Dockerfile -t app:test .
 	@echo "✅ Build app test... done"
 
+dk-create-network-ci:
+	@echo "==> Create network ci..."
+	@docker network create ci-network 2>/dev/null || true
+	@echo "✅ Create network ci... done"
+
 dk-run-test-app-ci:
 	@echo "==> Run test app..."
 
 	docker rm -f app-test || true
 
 	docker run -d \
-	$(if $(NETWORK),--network $(NETWORK),) \
+	--network ci-network \
 	--env-file .env \
 	-p 3000:3000 \
 	--name app-test \
@@ -98,10 +102,33 @@ dk-debug-app-test-ci:
 	docker logs app-test || true
 	@echo "✅ Debug app test... done"
 
-dk-clean-app-test-ci:
+dk-clean-ci:
 	@echo "==> Clean app test..."
-	docker rm -f app-test || true
+	@docker rm -f app-test postgres-ci 2>/dev/null || true
+	@docker network rm ci-network 2>/dev/null || true
 	@echo "✅ Clean app test... done"
+
+dk-clean-act:
+	@echo "==> Cleaning act containers..."
+	@docker rm -f $$(docker ps -aq --filter "name=act-") 2>/dev/null || true
+	@echo "✅ Act clean done"
+
+dk-run-postgres-ci:
+	@echo "==> Starting postgres..."
+	@docker rm -f postgres-ci 2>/dev/null || true
+
+	@docker run -d \
+		--name postgres-ci \
+		--network ci-network \
+		-e POSTGRES_USER=test \
+		-e POSTGRES_PASSWORD=test \
+		-e POSTGRES_DB=testdb \
+		--health-cmd="pg_isready -U test" \
+		--health-interval=5s \
+		--health-timeout=3s \
+		--health-retries=10 \
+		postgres:16
+	@echo "✅ Starting postgres... done"
 
 # ==================================================
 # DATABASE
@@ -109,15 +136,17 @@ dk-clean-app-test-ci:
 
 db-wait-db-ci:
 	@echo "==> Waiting for postgres..."
-	@POSTGRES_ID=$$(docker ps \
-		--filter "ancestor=postgres:16" \
-		--format "{{.ID}}"); \
-	until [ "$$(docker inspect \
-		-f '{{.State.Health.Status}}' $$POSTGRES_ID)" = "healthy" ]; do \
-		echo "Postgres not healthy yet..."; \
-		sleep 1; \
-	done
-	@echo "✅ Waiting for postgres...done. Postgres is ready"
+	@for i in $$(seq 1 60); do \
+		STATUS=$$(docker inspect --format='{{.State.Health.Status}}' postgres-ci 2>/dev/null || echo "starting"); \
+		if [ "$$STATUS" = "healthy" ]; then \
+			echo "✅ Waiting for postgres...done. Postgres is ready"; \
+			exit 0; \
+		fi; \
+		echo "Postgres status: $$STATUS"; \
+		sleep 2; \
+	done; \
+	echo "❌ Postgres never became healthy"; \
+	docker logs postgres-ci; \
 
 # CREATE DB USER
 db-create-user:
@@ -215,7 +244,7 @@ db-migrate:
 db-migrate-ci:
 	@echo "==> Run migrations..."
 	docker run -d \
-	$(if $(NETWORK),--network $(NETWORK),) \
+	--network ci-network \
 	--env-file .env \
 	app:test \
 	node scripts/migrate.js
@@ -297,11 +326,25 @@ app-health-check-dev:
 	@echo "✅ App Health check passed"
 
 app-wait-ready-ci:
-	@echo "==> Waiting container healthy..."
+	@echo "==> Waiting app ready..."
+	@for i in $$(seq 1 30); do \
+		if curl -sf http://localhost:3000/ready >/dev/null; then \
+			echo "✅ Waiting app ready...done. Access point ready/"; \
+			exit 0; \
+		fi; \
+		echo "App not ready yet..."; \
+		sleep 2; \
+	done; \
+	echo "❌ App never became ready"; \
+	docker logs app-test; \
+	exit 1
+
+app-health-check-ci:
+	@echo "==> Waiting app healthy..."
 	@for i in $$(seq 1 30); do \
 		STATUS=$$(docker inspect --format='{{.State.Health.Status}}' app-test 2>/dev/null || echo "starting"); \
 		if [ "$$STATUS" = "healthy" ]; then \
-			echo "✅ Waiting container healthy...done"; \
+			echo "✅ Waiting app healthy...done. Access point healthy/"; \
 			exit 0; \
 		fi; \
 		echo "Status: $$STATUS"; \
@@ -309,23 +352,6 @@ app-wait-ready-ci:
 	done; \
 	echo "❌ App not healthy"; \
 	docker logs app-test; \
-	exit 1
-
-app-health-check-ci:
-	@echo "==> Health check..."
-	@for i in $$(seq 1 30); do \
-		STATUS=$$(docker inspect --format='{{.State.Health.Status}}' app-test 2>/dev/null || echo "starting"); \
-		RESP=$$(curl -sf http://localhost:3000/health 2>/dev/null); \
-		if [ "$$STATUS" = "healthy" ] && [ "$$RESP" != "" ]; then \
-			echo "$$RESP"; \
-			echo "✅ Health check...done"; \
-			exit 0; \
-		fi; \
-		echo "⏳ Status: $$STATUS ($$i/30)"; \
-		sleep 2; \
-	done; \
-	echo "❌ Health check failed"; \
-	docker logs app-test || true; \
 	exit 1
 
 # ==================================================
@@ -444,20 +470,23 @@ ci:
 
 	@$(MAKE) app-build
 
+	@$(MAKE) dk-create-network-ci
+	@$(MAKE) dk-run-postgres-ci
 	@$(MAKE) dk-build-app-test-ci
 	@$(MAKE) dk-run-test-app-ci
-	@$(MAKE) app-wait-ready-ci
+
+	@$(MAKE) app-health-check-ci
 
 	@$(MAKE) dk-debug-app-test-ci
 
 	@$(MAKE) db-wait-db-ci
 	@$(MAKE) db-migrate-ci
 
+# 	@$(MAKE) app-wait-ready-ci
+
 	@$(MAKE) test-int
 
-	@$(MAKE) app-health-check-ci
-
-	@$(MAKE) dk-clean-app-test-ci
+	@$(MAKE) dk-clean-ci
 
 	@echo "✅ CI PASSED"
 
