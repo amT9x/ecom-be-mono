@@ -1,16 +1,44 @@
+// const isProd = process.env.NODE_ENV === 'production';
+
+// export const loggerConfig = isProd
+//   ? {
+//       level: 'info',
+//     }
+//   : {
+//       level: 'debug',
+//       transport: {
+//         target: 'pino-pretty',
+//         options: {
+//           colorize: true,
+//           translateTime: 'HH:MM:ss.l',
+//         },
+//       },
+//     };
+
 const isProd = process.env.NODE_ENV === 'production';
 
-export const loggerConfig = isProd
-  ? {
-      level: 'info',
-    }
-  : {
-      level: 'debug',
-      transport: {
+export const loggerConfig = {
+  level: isProd ? 'info' : 'debug',
+
+  transport: isProd
+    ? undefined
+    : {
         target: 'pino-pretty',
         options: {
           colorize: true,
           translateTime: 'HH:MM:ss.l',
+          // ignore: 'err.stack',
         },
       },
-    };
+
+  serializers: {
+    err(error: any) {
+      return {
+        type: error.constructor?.name,
+        message: error.message,
+        code: error.code,
+        stack: error.stack,
+      };
+    },
+  },
+};
