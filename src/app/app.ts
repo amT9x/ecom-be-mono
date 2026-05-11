@@ -4,12 +4,17 @@ import { loggerConfig } from '../config/logger.config.js';
 import { requestContextPlugin } from '../plugins/request-context.plugin.js';
 import { loggerPlugin } from '../plugins/request-lifecycle-logger.plugin.js';
 import { productRoutes } from '../modules/product/product.route.js';
+import { errorHandler } from '../plugins/error-handler.plugin.js';
 
 export function buildApp() {
-  const app = Fastify({ logger: loggerConfig });
+  const app = Fastify({
+    logger: loggerConfig,
+    disableRequestLogging: true,
+  });
 
   app.register(requestContextPlugin);
-  // app.register(loggerPlugin);
+  app.register(errorHandler);
+  app.register(loggerPlugin);
   app.register(productRoutes);
 
   app.get('/', async () => {
