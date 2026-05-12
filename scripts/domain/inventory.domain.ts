@@ -1,48 +1,60 @@
 import 'dotenv/config';
 import { Pool } from 'pg';
 import { InventoryService } from '../../src/modules/inventory/inventory.service.js';
+import { InventoryRepository } from '../../src/modules/inventory/inventory.repository.js';
 import { NotFoundError } from '../../src/shared/errors/http-error.js';
 
 async function main() {
-  const DB_URL = "postgresql://ecom_app:devpw@localhost:5432/ecom_mono";
-
   const pool = new Pool({
-    connectionString: DB_URL,
+    connectionString: process.env.DB_URL,
   });
 
-  const inventory = new InventoryService(pool);
+  const client = await pool.connect(); // TRANSACTION CLIENT
 
-  const { rows } = await pool.query(`
-  SELECT product_id
-  FROM inventory
-  LIMIT 1
-`);
+  try {
+    await client.query('BEGIN');
 
-  if (!rows.length) {
-    throw new NotFoundError('No inventory found. Run seed first.');
+    const repo = new InventoryRepository(client);
+    const service = new InventoryService(repo);
+
+    const { rows } = await client.query(`
+      SELECT product_id FROM inventory LIMIT 1
+    `);
+
+    if (!rows.length) {
+      throw new NotFoundError('No inventory found');
+    }
+
+    const productId = rows[0].product_id;
+
+    async function logState(label: string) {
+      const { rows } = await client.query(
+        `SELECT total_stock, reserved_stock
+         FROM inventory
+         WHERE product_id = $1`,
+        [productId],
+      );
+
+      console.log(label, rows[0]);
+    }
+
+    await logState('🔎 BEFORE');
+
+    console.log('reserve...');
+    await service.reserveStock(productId, 1);
+
+    await logState('🔎 AFTER RESERVE (should NOT change)');
+
+    await client.query('COMMIT');
+    console.log('Done');
+  } catch (e) {
+    console.log('ROLLBACK triggered');
+    await client.query('ROLLBACK');
+    console.error(e);
+  } finally {
+    client.release();
+    await pool.end();
   }
-
-  const productId = rows[0].product_id;
-
-  console.log('check stock...');
-  const available = await inventory.checkAvailableStock(productId, 1);
-  console.log('available:', available);
-
-  console.log('reserve...');
-  await inventory.reserveStock(productId, 1);
-
-  console.log('release...');
-  await inventory.releaseStock(productId, 1);
-
-  console.log('reserve again...');
-  await inventory.reserveStock(productId, 1);
-
-  console.log('deduct...');
-  await inventory.deductStock(productId, 1);
-
-  console.log('done ✅');
-
-  await pool.end();
 }
 
-main().catch(console.error);
+main();
