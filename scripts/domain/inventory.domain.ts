@@ -46,6 +46,9 @@ async function main() {
 
     await logState('🔎 AFTER RESERVE (should NOT change)');
 
+    console.log('server crash...')
+    process.exit(1);
+
     await client.query('COMMIT');
     console.log('Done');
   } catch (e) {
