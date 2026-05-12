@@ -109,10 +109,13 @@ db-reset-schema:
 db-migrate:
 	@./scripts/db/migrate.sh $(MODE)
 
+db-pre-push:
+	@./scripts/db/pre_push.sh
+
 db-reset:
 	$(MAKE) db-drop-db
 	$(MAKE) db-create-db
-	$(MAKE) db-migrate MODE=base
+	$(MAKE) db-migrate MODE=dev
 	$(MAKE) db-seed
 
 db-fresh-data: db-reset-data db-seed
@@ -120,7 +123,7 @@ db-fresh-data: db-reset-data db-seed
 db-bootstrap:
 	$(MAKE) db-create-db
 	$(MAKE) db-extensions
-	$(MAKE) db-migrate MODE=dev
+	$(MAKE) db-migrate MODE=boot
 	$(MAKE) db-seed
 
 # ==================================================
@@ -219,7 +222,7 @@ pre-commit:
 pre-push:
 	@echo "==> Prepush..."
 	@$(MAKE) pre-commit
-	@$(MAKE) db-migrate-dev
+	@$(MAKE) db-pre-push
 	@$(MAKE) test-int
 	@echo "✅ Prepush...done"
 

@@ -19,11 +19,11 @@ PSQL="docker exec -i $DB_CONTAINER psql \
 
 echo "==> Running migrations (MODE=$MODE)..."
 
-run_base() {
+run_dev() {
   node scripts/migrate.js
 }
 
-run_dev() {
+run_boot() {
    for file in $MIGRATIONS; do
       echo "Running migrate: $file"
       cat "$file" | eval "$PSQL"
@@ -39,7 +39,7 @@ run_ci() {
 }
 
 case "$MODE" in
-  base) run_base ;;
+  boot) run_boot ;;
   dev) run_dev ;;
   ci) run_ci ;;
   *)
