@@ -1,18 +1,10 @@
 # ===============================
 # CONFIG
 # ===============================
-# .ONESHELL:
-# SHELL := /bin/bash
-
 ifneq (,$(wildcard .env))
 include .env
 export
 endif
-# APP_NAME=ecommerce-api
-# DOCKER_USER=your_dockerhub_username
-# IMAGE=$(DOCKER_USER)/$(APP_NAME):latest
-# VPS_USER=root
-# VPS_HOST=your_vps_ip
 
 config-env:
 	@test -f .env || (cp .env.example .env && echo "Created .env")
@@ -21,11 +13,6 @@ COMPOSE=docker compose -f docker/docker-compose.yml
 
 DB_CONTAINER=infra-wsl2-postgres-1
 PSQL=docker exec -i $(DB_CONTAINER) psql -U $(DB_USER) -d $(DB_NAME) -v ON_ERROR_STOP=1
-
-DB_EXTENSIONS=$(wildcard infra/sql/*extensions.sql)
-MIGRATIONS=$(wildcard db/migration/*.sql)
-SEEDDEVS=$(wildcard db/seed/dev/*.sql)
-TESTS=$(wildcard db/test/*.sql)
 
 create-env-ci:
 	@echo "==> Create env file..."
@@ -56,212 +43,85 @@ dk-restart:
 dk-logs:
 	$(COMPOSE) logs -f
 
-dk-shell:
-	docker exec -it $(DB_CONTAINER) bash
-
-dk-build-app-test:
-	@echo "==> Build app test..."
-	docker build \
-	-f docker/Dockerfile \
-	-t app:test \
-	.
-	@echo "✅ Build app test... done"
-
-dk-build-app-test-ci:
-	@echo "==> Build app test..."
-	docker build -f docker/Dockerfile -t app:test .
-	@echo "✅ Build app test... done"
+dk-build-app-ci:
+	@./scripts/docker/ci_pipeline.sh build
 
 dk-create-network-ci:
-	@echo "==> Create network ci..."
-	@docker network create ci-network 2>/dev/null || true
-	@echo "✅ Create network ci... done"
-
-dk-run-test-app-ci:
-	@echo "==> Run test app..."
-
-	docker rm -f app-test || true
-
-	docker run -d \
-	--network ci-network \
-	--env-file .env \
-	-p 3000:3000 \
-	--name app-test \
-	app:test
-
-	@echo "Waiting container..."
-	@for i in {1..10}; do \
-		docker inspect -f '{{.State.Running}}' app-test | grep true && break; \
-		sleep 1; \
-	done
-
-	docker inspect -f '{{.State.Running}}' app-test
-
-	@echo "✅ Run test app... done"
-
-dk-debug-app-test-ci:
-	@echo "==> Debug app test..."
-	docker ps -a
-	docker logs app-test || true
-	@echo "✅ Debug app test... done"
-
-dk-clean-ci:
-	@echo "==> Clean app test..."
-	@docker rm -f app-test postgres-ci 2>/dev/null || true
-	@docker network rm ci-network 2>/dev/null || true
-	@echo "✅ Clean app test... done"
-
-dk-clean-act:
-	@echo "==> Cleaning act containers..."
-	@docker rm -f $$(docker ps -aq --filter "name=act-") 2>/dev/null || true
-	@echo "✅ Act clean done"
+	@./scripts/docker/ci_pipeline.sh network
 
 dk-run-postgres-ci:
-	@echo "==> Starting postgres..."
-	@docker rm -f postgres-ci 2>/dev/null || true
+	@./scripts/docker/ci_pipeline.sh postgres
 
-	@docker run -d \
-		--name postgres-ci \
-		--network ci-network \
-		-e POSTGRES_USER=test \
-		-e POSTGRES_PASSWORD=test \
-		-e POSTGRES_DB=testdb \
-		--health-cmd="pg_isready -U test" \
-		--health-interval=5s \
-		--health-timeout=3s \
-		--health-retries=10 \
-		postgres:16
-	@echo "✅ Starting postgres... done"
+dk-run-app-ci:
+	@./scripts/docker/ci_pipeline.sh app
+
+dk-debug-app-ci:
+	@./scripts/docker/ci_pipeline.sh debug
+
+dk-clean-ci:
+	@./scripts/docker/ci_pipeline.sh clean
+
+dk-clean-act:
+	@./scripts/docker/ci_pipeline.sh clean-act
+
+dk-ci-pipeline:
+	@./scripts/docker/ci_pipeline.sh pipeline
 
 # ==================================================
 # DATABASE
 # ==================================================
+wait-db:
+	@./scripts/db/wait_db.sh $(MODE)
 
-db-wait-db-ci:
-	@echo "==> Waiting for postgres..."
-	@for i in $$(seq 1 60); do \
-		STATUS=$$(docker inspect --format='{{.State.Health.Status}}' postgres-ci 2>/dev/null || echo "starting"); \
-		if [ "$$STATUS" = "healthy" ]; then \
-			echo "✅ Waiting for postgres...done. Postgres is ready"; \
-			exit 0; \
-		fi; \
-		echo "Postgres status: $$STATUS"; \
-		sleep 2; \
-	done; \
-	echo "❌ Postgres never became healthy"; \
-	docker logs postgres-ci; \
-
-# CREATE DB USER
 db-create-user:
-	@cat infra/sql/001_create_user.sql | \
-	docker exec -i $(DB_CONTAINER) \
-	psql -U postgres \
-	-v ON_ERROR_STOP=1 \
-	-c "SET app.db_user='$(DB_USER)';" \
-	-c "SET app.db_password='$(DB_PASSWORD)';" \
-	-f -
+	@./scripts/db/manage.sh create-user
 
-# CREATE DB DEV
-db-create-db-dev:
-	@echo "==> Create database $(DB_NAME)"
-	@cat infra/sql/002_create_database.sql | \
-	docker exec -i $(DB_CONTAINER) \
-	psql -U postgres \
-	-v ON_ERROR_STOP=1 \
-	-v db_name=$(DB_NAME) \
-	-v db_user=$(DB_USER)
-	@echo "✅ Create database $(DB_NAME) done"
+db-drop-user:
+	@./scripts/db/manage.sh drop-user
 
-# CREATE DB
 db-create-db:
-	@echo "==> Create database $(DB_NAME)"
+	@./scripts/db/manage.sh create-db
 
-	docker exec -i $(DB_CONTAINER) \
-	psql -U postgres -d postgres \
-	-c "CREATE DATABASE $(DB_NAME) OWNER $(DB_USER);"
-
-	@echo "✅ Create database $(DB_NAME) done"
-
-# DROP DB
 db-drop-db:
-	@echo "==> Drop database $(DB_NAME)"
-	docker exec -i $(DB_CONTAINER) \
-	psql -U postgres -d postgres \
-	-c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='$(DB_NAME)' AND pid <> pg_backend_pid();"
+	@./scripts/db/manage.sh drop-db
 
-	docker exec -i $(DB_CONTAINER) \
-	psql -U postgres -d postgres \
-	-c "DROP DATABASE IF EXISTS $(DB_NAME);"
-	@echo "✅ Drop database $(DB_NAME) done"
+db-access-user-postgres:
+	@./scripts/db/manage.sh access-user-postgres
 
-# BOOTSTRAP DB EXTENSIONS
+db-access-user-ecom:
+	@./scripts/db/manage.sh access-user-ecom
+
 db-extensions:
-	@for file in $(DB_EXTENSIONS); do \
-		echo "Running migrate: $$file"; \
-		cat $$file | $(PSQL); \
-	done
+	@./scripts/db/extensions.sh
 
-# MIGRATIONS
-db-migrate-dev:
-	@echo "==> Running migrations..."
-	@for file in $(MIGRATIONS); do \
-		echo "Running migrate: $$file"; \
-		cat $$file | $(PSQL); \
-	done
-	@echo "✅ Finished migrations..."
+db-seed:
+	@./scripts/db/seed.sh
 
-# SEED DEV DATA
-db-seed-dev:
-	@for file in $(SEEDDEVS); do \
-		echo "Running seed: $$file"; \
-		cat $$file | $(PSQL); \
-	done
-
-# TEST DATABASE
 db-test:
-	@for file in $(TESTS); do \
-		echo "Running test: $$file"; \
-		cat $$file | $(PSQL); \
-	done
+	@./scripts/db/test.sh
 
-# RESET DATA OF TABLE
 db-reset-data:
-	@docker exec -i $(DB_CONTAINER) \
-	psql -U $(DB_USER) -d $(DB_NAME) \
-	-c "TRUNCATE TABLE products RESTART IDENTITY CASCADE;"
+	@./scripts/db/manage.sh reset-data
 
-# RESET TABLE
 db-reset-schema:
-	@echo "Reset schema $(DB_NAME)..."
-	@docker exec -i $(DB_CONTAINER) \
-	psql -U $(DB_USER) -d $(DB_NAME) \
-	-c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
-
-db-psql:
-	@docker exec -it $(DB_CONTAINER) \
-	psql -U $(DB_USER) -d $(DB_NAME)
+	@./scripts/db/manage.sh reset-schema
 
 db-migrate:
-	node scripts/migrate.js
-
-db-migrate-ci:
-	@echo "==> Run migrations..."
-	docker run -d \
-	--network ci-network \
-	--env-file .env \
-	app:test \
-	node scripts/migrate.js
-	@echo "✅ Run migrations...done"
+	@./scripts/db/migrate.sh $(MODE)
 
 db-reset:
 	$(MAKE) db-drop-db
 	$(MAKE) db-create-db
-	$(MAKE) db-migrate
-	$(MAKE) db-seed-dev
+	$(MAKE) db-migrate MODE=base
+	$(MAKE) db-seed
 
-db-fresh-data: db-reset-data db-seed-dev
+db-fresh-data: db-reset-data db-seed
 
-db-bootstrap: db-create-user db-create-db db-extensions db-migrate-dev db-seed-dev
+db-bootstrap:
+	$(MAKE) db-create-db
+	$(MAKE) db-extensions
+	$(MAKE) db-migrate MODE=dev
+	$(MAKE) db-seed
 
 # ==================================================
 # APP
@@ -270,92 +130,61 @@ app-install-npm:
 	npm install
 
 app-install-ci:
-	@echo "==> Install dependencies..."
 	npm ci
-	@echo "✅ Dependencies installed"
 
 app-audit-high:
-	@echo "==> Security audit (HIGH)"
 	npm audit --audit-level=high || true
-	@echo "✅ Security audit high...done. No high vulnerabilities"
 
 app-audit-critical:
-	@echo "==> Security audit (CRITICAL)"
 	npm audit --audit-level=critical
-	@echo "✅ Security audit ...done. No critical vulnerabilities"
 
 app-run:
 	npm run dev
 
 app-build:
-	@echo "==> Build app..."
 	npm run build
-	@echo "✅ Build app...done"
 
 app-start:
 	npm run start
 
-run-postgres:
-	docker run -d \
-  --name postgres \
-  --network ecom-network \
-  -e POSTGRES_USER=ecom_app \
-  -e POSTGRES_PASSWORD=devpw \
-  -e POSTGRES_DB=ecom_mono \
-  postgres:16
+.PHONY: app-health-check
+app-health-check:
+	@./scripts/app/health_check.sh $(MODE)
 
-app-health-check-dev:
-	@echo "==> App Health check..."
-	@echo "Run container"
-	docker rm -f app-test || true
+.PHONY: app-wait-ready
+app-wait-ready:
+	@./scripts/app/wait_ready.sh $(MODE)
 
-	docker run -d \
-		--network ecom-network \
-		--env-file .env \
-		-e DB_HOST=postgres \
-		-e HOST=0.0.0.0 \
-		-p 3000:3000 \
-		--name app-test \
-		app:test
+# ==================================================
+# TESTING
+# ==================================================
+test:
+	npm test
 
-	@echo "Wait startup"
-	sleep 10
+test-unit:
+	npm run test:unit
 
-	@echo "Health check"
-	curl --fail http://app-test:3000/health
+test-int:
+	npm run test:int
 
-	@echo "Cleanup"
-	docker rm -f app-test
-	@echo "✅ App Health check passed"
+test-watch:
+	npm run test:watch
 
-app-wait-ready-ci:
-	@echo "==> Waiting app ready..."
-	@for i in $$(seq 1 30); do \
-		if curl -sf http://localhost:3000/ready >/dev/null; then \
-			echo "✅ Waiting app ready...done. Access point ready/"; \
-			exit 0; \
-		fi; \
-		echo "App not ready yet..."; \
-		sleep 2; \
-	done; \
-	echo "❌ App never became ready"; \
-	docker logs app-test; \
-	exit 1
+# ==================================================
+# QUALITY
+# ==================================================
+lint:
+	npm run lint
 
-app-health-check-ci:
-	@echo "==> Waiting app healthy..."
-	@for i in $$(seq 1 30); do \
-		STATUS=$$(docker inspect --format='{{.State.Health.Status}}' app-test 2>/dev/null || echo "starting"); \
-		if [ "$$STATUS" = "healthy" ]; then \
-			echo "✅ Waiting app healthy...done. Access point healthy/"; \
-			exit 0; \
-		fi; \
-		echo "Status: $$STATUS"; \
-		sleep 2; \
-	done; \
-	echo "❌ App not healthy"; \
-	docker logs app-test; \
-	exit 1
+typecheck:
+	npm run typecheck
+
+format:
+	npm run format
+
+fix:
+	npm run format
+	npm run lint -- --fix
 
 # ==================================================
 # GIT FLOW
@@ -369,151 +198,47 @@ git:
 
 .PHONY: git-daily
 git-daily:
-	@bash scripts/git_flow/git_daily.sh
+	@./scripts/git_flow/git_daily.sh
 
 .PHONY: git-sync
 git-sync:
-	@bash scripts/git_flow/git_sync.sh
+	@./scripts/git_flow/git_sync.sh
 
 .PHONY: git-new-branch
 git-new-branch:
-	@bash scripts/git_flow/git_new_branch.sh
+	@./scripts/git_flow/git_new_branch.sh
 
-# ==================================================
-# TESTING
-# ==================================================
-test:
-	npm test
-
-test-unit:
-	npm run test:unit
-
-test-int:
-	@echo "==> Integration test..."
-	npm run test:int
-	@echo "✅ Integration test...done"
-
-test-watch:
-	npm run test:watch
-
-# ==================================================
-# QUALITY
-# ==================================================
-lint:
-	@echo "==> Lint..."
-	npm run lint
-	@echo "✅ Lint...done"
-
-typecheck:
-	@echo "==> Typecheck..."
-	npm run typecheck
-	@echo "✅ Typecheck...done"
-
-format:
-	npm run format
-
-fix:
-	@echo "🔧 Auto fixing..."
-	npm run format
-	npm run lint -- --fix
-
-check: lint typecheck
-
-# ==================================================
-# DEV EXPERIENCE
-# ==================================================
-
-doctor-dev:
-	@echo "=================================="
-	@echo "🩺 Environment Doctor"
-	@echo "=================================="
-
-	@printf "Docker CLI:      "
-	@command -v docker >/dev/null && echo "Installed" || echo "❌ missing"
-
-	@printf "Docker daemon:   "
-	@docker info >/dev/null 2>&1 && echo "Running" || echo "❌ not running"
-
-	@printf "Node.js:         "
-	@command -v node >/dev/null && echo "Installed" || echo "❌ missing"
-
-	@printf ".env file:       "
-	@test -f .env && echo "Found" || echo "❌ .env missing"
-
-	@echo "✅ Environment doctor passed"
-	@echo "=================================="
-
-doctor-ci:
-	@echo "==> CI doctor..."
-	@node -v
-	@npm -v
-	@docker --version
-	@echo "✅ CI doctor...done"
-
-clean-node:
-	@echo "🧹 Cleaning workspace..."
-	rm -rf node_modules dist coverage .cache
-
-reset-node: clean app-install-npm
-	@echo "♻️ Workspace reset"
-
-wait-10s:
-	@echo "Waiting 10 seconds..."
-	sleep 10
-	@echo "✅ Waiting 10 seconds... done"
-
-# deploy:
-# 	docker login
-# 	docker build -t $(IMAGE) .
-# 	docker push $(IMAGE)
-
-# 	ssh $(VPS_USER)@$(VPS_HOST) "\
-# 		docker pull $(IMAGE) && \
-# 		docker stop $(APP_NAME) || true && \
-# 		docker rm $(APP_NAME) || true && \
-# 		docker run -d \
-# 			--name $(APP_NAME) \
-# 			-p 3000:3000 \
-# 			$(IMAGE)"
-
+.PHONY: pre-commit
 pre-commit:
 	@echo "==> Precommit..."
 	@$(MAKE) lint
 	@$(MAKE) typecheck
 	@echo "✅ Precommit...done"
 
-pre-push: pre-commit db-migrate-dev test-int
-
-ci:
-	@$(MAKE) doctor-ci
-	@$(MAKE) create-env-ci
-	@$(MAKE) app-install-ci
-
+.PHONY: pre-push
+pre-push:
+	@echo "==> Prepush..."
 	@$(MAKE) pre-commit
-	@$(MAKE) app-audit-high
-	@$(MAKE) app-audit-critical
-
-	@$(MAKE) app-build
-
-	@$(MAKE) dk-create-network-ci
-	@$(MAKE) dk-run-postgres-ci
-	@$(MAKE) dk-build-app-test-ci
-	@$(MAKE) dk-run-test-app-ci
-
-	@$(MAKE) app-health-check-ci
-
-	@$(MAKE) dk-debug-app-test-ci
-
-	@$(MAKE) db-wait-db-ci
-	@$(MAKE) db-migrate-ci
-
-# 	@$(MAKE) app-wait-ready-ci
-
+	@$(MAKE) db-migrate-dev
 	@$(MAKE) test-int
+	@echo "✅ Prepush...done"
 
-	@$(MAKE) dk-clean-ci
+# ==================================================
+# DEV ENVIROMENTs
+# ==================================================
+doctor:
+	@./scripts/enviroments/doctor.sh $(MODE)
 
-	@echo "✅ CI PASSED"
+act:
+	act pull-request -j validate-pr --rebuild
+
+clean-node:
+	rm -rf node_modules dist coverage .cache
+
+reset-node: clean app-install-npm
+
+wait-10s:
+	sleep 10
 
 # ==================================================
 # WORKFLOW
@@ -522,10 +247,13 @@ bootstrap: config-env
 	@$(MAKE) db-bootstrap
 	@$(MAKE) app-install-npm
 	@$(MAKE) dk-build-up
-reset-table-data: db-fresh-data
 up: dk-up
 down: dk-down
 dev: app-run
+ci:
+	@./scripts/ci/run.sh
+deploy:
+	@./scripts/ci/deploy.sh
 
 # ===============================
 # HELP
