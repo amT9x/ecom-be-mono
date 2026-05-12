@@ -79,6 +79,9 @@ db-access-user-postgres:
 db-access-user-ecom:
 	@./scripts/db/manage.sh access-user-ecom
 
+db-access-db-test:
+	@./scripts/db/manage.sh access-db-test
+
 db-extensions:
 	@./scripts/db/extensions.sh
 
