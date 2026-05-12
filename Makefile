@@ -85,6 +85,9 @@ db-extensions:
 db-seed:
 	@./scripts/db/seed.sh
 
+db-seed-inventory:
+	npx tsx --tsconfig tsconfig.scripts.json db/seed/dev/seed_inventory.ts
+
 db-test:
 	@./scripts/db/test.sh
 
@@ -160,6 +163,12 @@ test-int:
 
 test-watch:
 	npm run test:watch
+
+# ==================================================
+# DOMAIN
+# ==================================================
+domain-inventory:
+	npx tsx scripts/domain/inventory.domain.ts
 
 # ==================================================
 # QUALITY
