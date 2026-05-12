@@ -1,116 +1,52 @@
-import { Pool } from 'pg';
 import { InventoryRepository } from './inventory.repository.js';
 import { NotFoundError } from '../../shared/errors/http-error.js';
 
 export class InventoryService {
-  constructor(private readonly pool: Pool) {}
+  constructor(private repo: InventoryRepository) {}
 
-  async checkAvailableStock(
-    productId: string,
-    quantity: number,
-  ): Promise<boolean> {
-    const client = await this.pool.connect();
+  async checkAvailableStock(productId: string, quantity: number) {
+    const inventory = await this.repo.findByProductId(productId);
 
-    try {
-      await client.query('BEGIN');
-
-      const repo = new InventoryRepository(client);
-
-      const inventory = await repo.findByProductId(productId);
-
-      if (!inventory) {
-        throw new NotFoundError('Inventory not found');
-      }
-
-      const available = inventory.total_stock - inventory.reserved_stock;
-
-      await client.query('COMMIT');
-
-      return available >= quantity;
-    } catch (err) {
-      await client.query('ROLLBACK');
-      throw err;
-    } finally {
-      client.release();
+    if (!inventory) {
+      throw new NotFoundError('Inventory not found');
     }
+
+    const available = inventory.total_stock - inventory.reserved_stock;
+
+    return available >= quantity;
   }
 
-  async reserveStock(productId: string, quantity: number): Promise<void> {
-    const client = await this.pool.connect();
+  async reserveStock(productId: string, quantity: number) {
+    const inventory = await this.repo.findByProductId(productId);
 
-    try {
-      await client.query('BEGIN');
-
-      const repo = new InventoryRepository(client);
-
-      const inventory = await repo.findByProductId(productId);
-
-      if (!inventory) {
-        throw new NotFoundError('Inventory not found');
-      }
-
-      const available = inventory.total_stock - inventory.reserved_stock;
-
-      if (available < quantity) {
-        throw new Error('Insufficient stock');
-      }
-
-      await repo.reserveStock(productId, quantity);
-
-      await client.query('COMMIT');
-    } catch (err) {
-      await client.query('ROLLBACK');
-      throw err;
-    } finally {
-      client.release();
+    if (!inventory) {
+      throw new NotFoundError('Inventory not found');
     }
+
+    const available = inventory.total_stock - inventory.reserved_stock;
+
+    if (available < quantity) {
+      throw new Error('Insufficient stock');
+    }
+
+    await this.repo.reserveStock(productId, quantity);
   }
 
-  async releaseStock(productId: string, quantity: number): Promise<void> {
-    const client = await this.pool.connect();
-
-    try {
-      await client.query('BEGIN');
-
-      const repo = new InventoryRepository(client);
-
-      await repo.releaseStock(productId, quantity);
-
-      await client.query('COMMIT');
-    } catch (err) {
-      await client.query('ROLLBACK');
-      throw err;
-    } finally {
-      client.release();
-    }
+  async releaseStock(productId: string, quantity: number) {
+    await this.repo.releaseStock(productId, quantity);
   }
 
-  async deductStock(productId: string, quantity: number): Promise<void> {
-    const client = await this.pool.connect();
+  async deductStock(productId: string, quantity: number) {
+    const inventory = await this.repo.findByProductId(productId);
 
-    try {
-      await client.query('BEGIN');
-
-      const repo = new InventoryRepository(client);
-
-      const inventory = await repo.findByProductId(productId);
-
-      if (!inventory) {
-        throw new NotFoundError('Inventory not found');
-      }
-
-      if (inventory.reserved_stock < quantity) {
-        throw new Error('Invalid deduction');
-      }
-
-      await repo.deductStock(productId, quantity);
-
-      await client.query('COMMIT');
-    } catch (err) {
-      await client.query('ROLLBACK');
-      throw err;
-    } finally {
-      client.release();
+    if (!inventory) {
+      throw new NotFoundError('Inventory not found');
     }
+
+    if (inventory.reserved_stock < quantity) {
+      throw new Error('Invalid deduction');
+    }
+
+    await this.repo.deductStock(productId, quantity);
   }
 }

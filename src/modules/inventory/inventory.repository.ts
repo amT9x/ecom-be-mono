@@ -1,23 +1,25 @@
-import { PoolClient } from "pg";
-
 export interface InventoryRow {
   product_id: string;
   total_stock: number;
   reserved_stock: number;
 }
 
+export type DBExecutor = {
+  query<T = any>(text: string, params?: any[]): Promise<{ rows: T[] }>;
+};
+
 export class InventoryRepository {
-  constructor(private readonly db: PoolClient) {}
+  constructor(private readonly db: DBExecutor) {}
 
   async findByProductId(productId: string): Promise<InventoryRow | null> {
-    const result = await this.db.query(
+    const result = await this.db.query<InventoryRow>(
       `
       SELECT product_id, total_stock, reserved_stock
       FROM inventory
       WHERE product_id = $1
       FOR UPDATE
       `,
-      [productId]
+      [productId],
     );
 
     return result.rows[0] ?? null;
@@ -31,7 +33,7 @@ export class InventoryRepository {
           updated_at = NOW()
       WHERE product_id = $2
       `,
-      [quantity, productId]
+      [quantity, productId],
     );
   }
 
@@ -43,7 +45,7 @@ export class InventoryRepository {
           updated_at = NOW()
       WHERE product_id = $2
       `,
-      [quantity, productId]
+      [quantity, productId],
     );
   }
 
@@ -51,13 +53,12 @@ export class InventoryRepository {
     await this.db.query(
       `
       UPDATE inventory
-      SET
-        total_stock = total_stock - $1,
-        reserved_stock = reserved_stock - $1,
-        updated_at = NOW()
+      SET total_stock = total_stock - $1,
+          reserved_stock = reserved_stock - $1,
+          updated_at = NOW()
       WHERE product_id = $2
       `,
-      [quantity, productId]
+      [quantity, productId],
     );
   }
 }
