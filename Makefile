@@ -11,9 +11,6 @@ config-env:
 
 COMPOSE=docker compose -f docker/docker-compose.yml
 
-DB_CONTAINER=infra-wsl2-postgres-1
-PSQL=docker exec -i $(DB_CONTAINER) psql -U $(DB_USER) -d $(DB_NAME) -v ON_ERROR_STOP=1
-
 create-env-ci:
 	@echo "==> Create env file..."
 	cp .env.ci .env
@@ -25,20 +22,11 @@ create-env-ci:
 dk-build:
 	$(COMPOSE) build
 
-dk-build-clean:
-	$(COMPOSE) build --no-cache
-
 dk-up:
 	$(COMPOSE) up -d
 
 dk-down:
 	$(COMPOSE) down
-
-dk-build-up: dk-build dk-up
-
-dk-restart:
-	$(COMPOSE) down
-	$(COMPOSE) up -d
 
 dk-logs:
 	$(COMPOSE) logs -f
@@ -182,9 +170,6 @@ lint:
 typecheck:
 	npm run typecheck
 
-format:
-	npm run format
-
 fix:
 	npm run format
 	npm run lint -- --fix
@@ -263,33 +248,27 @@ deploy:
 # ===============================
 help:
 	@echo ""
-	@echo "🚀 CORE DEV"
-	@echo " make dev               <- start app dev"
-	@echo " make up                <- start dk"
-	@echo " make down              <- stop dk"
-	@echo " make bootstrap         <- bootstrap everything"
-	@echo " make reset-table-data  <- reset table data"
+	@echo "🚀 CORE"
+	@echo "  make bootstrap   Setup project first time"
+	@echo "  make dev         Run app locally"
+	@echo "  make up          Start docker services"
+	@echo "  make down        Stop docker services"
 	@echo ""
-# 	@echo "🗄 DATABASE"
-# 	@echo " make db-create-user"
-# 	@echo " make db-create-db"
-# 	@echo " make db-extensions"
-# 	@echo " make db-migrate-dev"
-# 	@echo " make db-seed-dev"
-# 	@echo " make db-test"
-# 	@echo " make db-reset-schema"
-# 	@echo " make db-reset-data"
-# 	@echo " make db-psql"
-# 	@echo ""
-# 	@echo "📦 APP"
-# 	@echo " make app-install"
-# 	@echo " make app-run"
-# 	@echo " make app-build"
-# 	@echo " make app-start"
-# 	@echo ""
-# 	@echo "🧪 TESTING"
-# 	@echo ""
-# 	@echo "🧹 QUALITY"
-# 	@echo ""
-# 	@echo "🔧 DX"
-# 	@echo ""
+	@echo "🗄 DATABASE"
+	@echo "  make db-migrate"
+	@echo "  make db-seed"
+	@echo "  make db-reset"
+	@echo "  make db-pre-push"
+	@echo ""
+	@echo "🧪 QUALITY"
+	@echo "  make test"
+	@echo "  make lint"
+	@echo "  make typecheck"
+	@echo "  make fix"
+	@echo ""
+	@echo "🌿 GIT"
+	@echo "  make git-daily"
+	@echo "  make git-sync"
+	@echo "  make git-new-branch"
+	@echo "  make pre-push"
+	@echo ""
