@@ -13,6 +13,8 @@ $$ LANGUAGE plpgsql;
 -- =========================================
 -- TRIGGER: products updated_at
 -- =========================================
+DROP TRIGGER IF EXISTS trg_products_updated_at ON products;
+
 CREATE TRIGGER trg_products_updated_at
 BEFORE UPDATE ON products
 FOR EACH ROW
