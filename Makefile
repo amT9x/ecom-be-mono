@@ -1,6 +1,9 @@
 # ===============================
 # CONFIG
 # ===============================
+# .ONESHELL:
+# SHELL := /bin/bash
+
 ifneq (,$(wildcard .env))
 include .env
 export
@@ -353,6 +356,28 @@ app-health-check-ci:
 	echo "❌ App not healthy"; \
 	docker logs app-test; \
 	exit 1
+
+# ==================================================
+# GIT FLOW
+# ==================================================
+.PHONY: git
+git:
+	@echo "Git workflow:"
+	@echo "  make git-daily"
+	@echo "  make git-sync"
+	@echo "  make git-new-branch"
+
+.PHONY: git-daily
+git-daily:
+	@bash scripts/git_flow/git_daily.sh
+
+.PHONY: git-sync
+git-sync:
+	@bash scripts/git_flow/git_sync.sh
+
+.PHONY: git-new-branch
+git-new-branch:
+	@bash scripts/git_flow/git_new_branch.sh
 
 # ==================================================
 # TESTING
