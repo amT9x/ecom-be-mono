@@ -10,6 +10,7 @@ async function main() {
   });
 
   const client = await pool.connect(); // TRANSACTION CLIENT
+  const observer = await pool.connect(); // OBSERVER CLIENT
 
   try {
     await client.query('BEGIN');
@@ -17,7 +18,7 @@ async function main() {
     const repo = new InventoryRepository(client);
     const service = new InventoryService(repo);
 
-    const { rows } = await client.query(`
+    const { rows } = await observer.query(`
       SELECT product_id FROM inventory LIMIT 1
     `);
 
@@ -28,7 +29,7 @@ async function main() {
     const productId = rows[0].product_id;
 
     async function logState(label: string) {
-      const { rows } = await client.query(
+      const { rows } = await observer.query(
         `SELECT total_stock, reserved_stock
          FROM inventory
          WHERE product_id = $1`,
@@ -53,6 +54,7 @@ async function main() {
     console.error(e);
   } finally {
     client.release();
+    observer.release();
     await pool.end();
   }
 }
