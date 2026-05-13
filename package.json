@@ -20,7 +20,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:unit": "vitest run tests/unit",
-    "test:int": "vitest run tests/integration",
+    "test:int": "vitest run tests/intergration",
     "test:watch": "vitest",
     "ci": "npm typecheck && npm lint && npm test",
     "db:migrate": "node scripts/migrate.js"
