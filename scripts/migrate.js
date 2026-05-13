@@ -3,14 +3,11 @@ import fs from 'fs';
 import path from 'path';
 import { Client } from 'pg';
 
-dotenv.config({
-  path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
-});
-
-console.log('DB_URL:', process.env.DB_URL);
+if (!process.env.DB_URL) {
+  dotenv.config();
 
 const client = new Client({
-  connectionString: process.env.DB_URL || process.env.TEST_DB_URL,
+  connectionString: process.env.DB_URL,
 });
 
 await client.connect();
