@@ -5,6 +5,7 @@ import { Client } from 'pg';
 
 if (!process.env.DB_URL) {
   dotenv.config();
+}
 
 const client = new Client({
   connectionString: process.env.DB_URL,
