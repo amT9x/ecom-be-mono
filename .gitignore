@@ -1,14 +1,16 @@
 node_modules/
 dist/
 build/
-.env
 .DS_Store
 *.log
 .idea/
 .vscode/
+
 .env
-.env.local
-.env.docker
+.env.*
+!.env.example
+!.env.test
+
 # local database snapshots
 db/dev
 db/*.sql
