@@ -34,6 +34,9 @@ dk-logs:
 dk-build-app-ci:
 	@./scripts/docker/ci_pipeline.sh build
 
+dk-build-test-int-ci:
+	@./scripts/docker/ci_pipeline.sh build-test-int
+
 dk-create-network-ci:
 	@./scripts/docker/ci_pipeline.sh network
 
@@ -42,6 +45,9 @@ dk-run-postgres-ci:
 
 dk-run-app-ci:
 	@./scripts/docker/ci_pipeline.sh app
+
+dk-run-test-int-ci:
+	@./scripts/docker/ci_pipeline.sh test-int
 
 dk-debug-app-ci:
 	@./scripts/docker/ci_pipeline.sh debug

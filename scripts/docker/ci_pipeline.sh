@@ -13,8 +13,19 @@ IMAGE="app:test"
 # =========================
 build_app() {
   echo "==> Build app test..."
-  docker build -f docker/Dockerfile -t "$IMAGE" .
+  docker build -f docker/Dockerfile --target production -t "$IMAGE" .
   echo "✅ Build app test done"
+}
+
+build_test_int() {
+  echo "==> Build test-int image..."
+
+  docker build \
+    -f docker/Dockerfile \
+    --target test \
+    -t test-int-runner .
+
+  echo "✅ Build test-int done"
 }
 
 # =========================
@@ -82,6 +93,19 @@ run_app() {
   echo "✅ App running"
 }
 
+run_test_int() {
+  echo "==> Run test-int..."
+
+  docker run --rm \
+    --network "$NETWORK" \
+    -e NODE_ENV=test \
+    -e DB_URL=postgresql://test:test@postgres:5432/testdb \
+    test-int-runner
+
+  echo "✅ Test-int done"
+}
+
+
 # =========================
 # DEBUG
 # =========================
@@ -127,9 +151,11 @@ pipeline() {
 # =========================
 case "$ACTION" in
   build) build_app ;;
+  build-test-int) build_test_int ;;
   network) create_network ;;
   postgres) run_postgres ;;
   app) run_app ;;
+  test-int) run_test_int ;;
   debug) debug_app ;;
   clean) clean_ci ;;
   clean-act) clean_act ;;
