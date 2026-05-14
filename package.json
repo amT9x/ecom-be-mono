@@ -23,7 +23,7 @@
     "test:int": "vitest run tests/intergration",
     "test:watch": "vitest",
     "ci": "npm typecheck && npm lint && npm test",
-    "db:migrate": "node scripts/migrate.js"
+    "db:migrate": "tsx scripts/migrate.ts"
   },
   "dependencies": {
     "dotenv": "17.4.2",
