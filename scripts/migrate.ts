@@ -1,14 +1,10 @@
-import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 import { Client } from 'pg';
-
-if (!process.env.DB_URL) {
-  dotenv.config();
-}
+import { env } from '../src/config/env.js';
 
 const client = new Client({
-  connectionString: process.env.DB_URL,
+  connectionString: env.DB_URL,
 });
 
 await client.connect();
@@ -29,7 +25,7 @@ for (const file of files) {
     [file],
   );
 
-  if (res.rowCount > 0) {
+  if ((res.rowCount ?? 0) > 0) {
     console.log('Skipping:', file);
     continue;
   }
