@@ -11,16 +11,6 @@ if [ "$MODE" != "ci" ]; then
   source .env
   set +a
 fi
-MIGRATIONS=db/migration/*.sql
-DB_CONTAINER=infra-wsl2-postgres-1
-
-DB_USER="${DB_USER:-$(echo "$DB_URL" | sed -E 's|postgresql://([^:]+):.*|\1|')}"
-DB_NAME="${DB_NAME:-$(echo "$DB_URL" | sed -E 's|.*/([^/?]+).*|\1|')}"
-
-PSQL="docker exec -i $DB_CONTAINER psql \
-  -U $DB_USER \
-  -d $DB_NAME \
-  -v ON_ERROR_STOP=1"
 
 echo "==> Running migrations (MODE=$MODE)..."
 
@@ -29,9 +19,20 @@ run_dev() {
 }
 
 run_boot() {
-   for file in $MIGRATIONS; do
-      echo "Running migrate: $file"
-      cat "$file" | eval "$PSQL"
+  MIGRATIONS=db/migration/*.sql
+  DB_CONTAINER=infra-wsl2-postgres-1
+
+  DB_USER="${DB_USER:-$(echo "$DB_URL" | sed -E 's|postgresql://([^:]+):.*|\1|')}"
+  DB_NAME="${DB_NAME:-$(echo "$DB_URL" | sed -E 's|.*/([^/?]+).*|\1|')}"
+
+  PSQL="docker exec -i $DB_CONTAINER psql \
+    -U $DB_USER \
+    -d $DB_NAME \
+    -v ON_ERROR_STOP=1"
+
+  for file in $MIGRATIONS; do
+    echo "Running migrate: $file"
+    cat "$file" | eval "$PSQL"
   done
 }
 
