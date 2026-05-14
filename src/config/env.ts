@@ -20,11 +20,6 @@ const envSchema = z.object({
   HOST: z.string(),
   PORT: z.coerce.number(),
 
-  DB_HOST: z.string(),
-  DB_PORT: z.coerce.number(),
-  DB_USER: z.string(),
-  DB_PASSWORD: z.string(),
-  DB_NAME: z.string(),
   DB_URL: z.string(),
 });
 
