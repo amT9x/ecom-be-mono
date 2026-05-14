@@ -5,7 +5,7 @@ ACTION="${1:-help}"
 
 NETWORK="ci-network"
 APP_CONTAINER="app-test"
-DB_CONTAINER="postgres-ci"
+DB_CONTAINER="postgres"
 IMAGE="app:test"
 
 # =========================
@@ -59,7 +59,11 @@ run_app() {
 
   docker run -d \
     --network "$NETWORK" \
-    --env-file .env \
+    -e DB_URL=postgresql://test:test@postgres:5432/testdb \
+    -e HOST=0.0.0.0 \
+    -e PORT=3000 \
+    -e NODE_ENV=test \
+    -e APP_NAME=ecom-test \
     -p 3000:3000 \
     --name "$APP_CONTAINER" \
     "$IMAGE"

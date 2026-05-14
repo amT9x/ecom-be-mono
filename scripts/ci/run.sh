@@ -2,7 +2,6 @@
 set -euo pipefail
 
 make doctor MODE=ci
-make create-env-test
 make app-install-ci
 
 make pre-commit
@@ -14,7 +13,7 @@ make app-build
 make dk-create-network-ci
 
 make dk-run-postgres-ci
-make wait-db MODE=ci DB_CONTAINER=postgres-ci
+make wait-db MODE=ci DB_CONTAINER=postgres
 
 make dk-build-app-ci
 make dk-run-app-ci
