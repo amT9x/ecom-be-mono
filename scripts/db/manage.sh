@@ -13,6 +13,9 @@ set +a
 
 DB_CONTAINER="${DB_CONTAINER:-infra-wsl2-postgres-1}"
 
+DB_USER="${DB_USER:-$(echo "$DB_URL" | sed -E 's|postgresql://([^:]+):.*|\1|')}"
+DB_NAME="${DB_NAME:-$(echo "$DB_URL" | sed -E 's|.*/([^/?]+).*|\1|')}"
+
 PSQL_BASE="docker exec -i $DB_CONTAINER psql -U postgres -d postgres -v ON_ERROR_STOP=1"
 PSQL_ECOM="docker exec -i $DB_CONTAINER psql -U $DB_USER -d $DB_NAME -v ON_ERROR_STOP=1"
 
