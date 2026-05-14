@@ -23,4 +23,4 @@ HEALTHCHECK \
   --start-period=20s \
   --retries=10 \
   CMD curl -f http://localhost:3000/health || exit 1
-CMD ["node", "dist/app/server.js"]
+CMD ["node", "dist/src/app/server.js"]
