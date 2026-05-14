@@ -12,7 +12,7 @@ services:
       - ../.env
     environment:
       - HOST=0.0.0.0
-      - DB_HOST=postgres
+      - DB_URL=postgresql://ecom_app:devpw@postgres:5432/ecom_mono
     networks:
       - ecom-network
     restart: unless-stopped
