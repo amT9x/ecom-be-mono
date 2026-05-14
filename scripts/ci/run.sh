@@ -2,7 +2,7 @@
 set -euo pipefail
 
 make doctor MODE=ci
-make create-env-ci
+make create-env-test
 make app-install-ci
 
 make pre-commit

@@ -11,9 +11,9 @@ config-env:
 
 COMPOSE=docker compose -f docker/docker-compose.yml
 
-create-env-ci:
+create-env-test:
 	@echo "==> Create env file..."
-	cp .env.ci .env
+	cp .env.test .env
 	@echo "✅ Create env file... done"
 
 # ==================================================
