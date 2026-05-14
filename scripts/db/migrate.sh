@@ -15,7 +15,7 @@ fi
 echo "==> Running migrations (MODE=$MODE)..."
 
 run_dev() {
-  node scripts/migrate.js
+  npx tsx scripts/migrate.ts
 }
 
 run_boot() {
