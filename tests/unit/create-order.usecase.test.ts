@@ -48,15 +48,60 @@ describe('CreateOrderUseCase', () => {
   });
 
   it('should create order successfully', async () => {
-    expect(true).toBeTruthy();
+        orderRepo.create.mockResolvedValue({ id: 'order-1' });
+
+        const usecase = new CreateOrderUseCase(
+          inventoryFactory,
+          orderRepoFactory,
+          pool,
+        );
+
+        const result = await usecase.execute('p1', 2);
+
+        expect(client.query).toHaveBeenCalledWith('BEGIN');
+
+        expect(inventoryService.reserveStock).toHaveBeenCalledWith('p1', 2);
+
+        expect(orderRepo.create).toHaveBeenCalled();
+
+        expect(orderRepo.addItem).toHaveBeenCalledWith('order-1', 'p1', 2);
+
+        expect(client.query).toHaveBeenCalledWith('COMMIT');
+
+        expect(client.release).toHaveBeenCalled();
+
+        expect(result).toEqual({ id: 'order-1' });
   });
-  it('should rollback if reserve stock fails', () => {
-    expect(true).toBeTruthy();
+
+  it('should rollback if reserve stock fails', async () => {
+    inventoryService.reserveStock.mockRejectedValue(new Error('no stock'));
+
+    await expect(orderUsecase.execute('p1', 2)).rejects.toThrow('no stock');
+
+    expect(client.query).toHaveBeenCalledWith('BEGIN');
+
+    expect(client.query).toHaveBeenCalledWith('ROLLBACK');
+
+    expect(client.release).toHaveBeenCalled();
   });
-  it('should rollback if create order fails', () => {
-    expect(true).toBeTruthy();
-  })
-  it('should release client', () => {
-    expect(true).toBeTruthy();
+
+  it('should rollback if create order fails', async () => {
+    orderRepo.create.mockRejectedValue(new Error('db error'));
+
+    await expect(orderUsecase.execute('p1', 2)).rejects.toThrow('db error');
+
+    expect(inventoryService.reserveStock).toHaveBeenCalled();
+
+    expect(client.query).toHaveBeenCalledWith('ROLLBACK');
+
+    expect(client.release).toHaveBeenCalled();
+  });
+
+  it('should release client', async () => {
+    inventoryService.reserveStock.mockRejectedValue(new Error('boom'));
+
+    await expect(orderUsecase.execute('p1', 2)).rejects.toThrow();
+
+    expect(client.release).toHaveBeenCalled();
   });
 });
