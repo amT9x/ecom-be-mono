@@ -28,7 +28,7 @@ export class PostgresOrderRepository implements OrderRepository {
   ): Promise<void> {
     await this.client.query(
       `
-      INSERT INTO order_items(order_id, product_id, quantity. price)
+      INSERT INTO order_items(order_id, product_id, quantity, price)
       VALUES ($1,$2,$3,$4)
       `,
       [orderId, productId, quantity, price],
