@@ -1,41 +1,51 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MODE="${1:-base}"
+MODE="${1:-dev}"
 
 # =========================
 # Load ENV
 # =========================
-set -a
-source .env
-set +a
-MIGRATIONS=db/migration/*.sql
-DB_CONTAINER=infra-wsl2-postgres-1
-
-PSQL="docker exec -i $DB_CONTAINER psql \
-  -U $DB_USER \
-  -d $DB_NAME \
-  -v ON_ERROR_STOP=1"
+if [ "$MODE" != "ci" ]; then
+  set -a
+  source .env
+  set +a
+fi
 
 echo "==> Running migrations (MODE=$MODE)..."
 
 run_dev() {
-  node scripts/migrate.js
+  npx tsx scripts/migrate.ts
 }
 
 run_boot() {
-   for file in $MIGRATIONS; do
-      echo "Running migrate: $file"
-      cat "$file" | eval "$PSQL"
+  MIGRATIONS=db/migration/*.sql
+  DB_CONTAINER=infra-wsl2-postgres-1
+
+  DB_USER="${DB_USER:-$(echo "$DB_URL" | sed -E 's|postgresql://([^:]+):.*|\1|')}"
+  DB_NAME="${DB_NAME:-$(echo "$DB_URL" | sed -E 's|.*/([^/?]+).*|\1|')}"
+
+  PSQL="docker exec -i $DB_CONTAINER psql \
+    -U $DB_USER \
+    -d $DB_NAME \
+    -v ON_ERROR_STOP=1"
+
+  for file in $MIGRATIONS; do
+    echo "Running migrate: $file"
+    cat "$file" | eval "$PSQL"
   done
 }
 
 run_ci() {
   docker run --rm \
     --network ci-network \
-    --env-file .env \
+    -e DB_URL=postgresql://test:test@postgres:5432/testdb \
+    -e HOST=0.0.0.0 \
+    -e PORT=3000 \
+    -e NODE_ENV=test \
+    -e APP_NAME=ecom-test \
     app:test \
-    node scripts/migrate.js
+    node dist/scripts/migrate.js
 }
 
 case "$MODE" in

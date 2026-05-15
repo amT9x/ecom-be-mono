@@ -18,12 +18,12 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests",
-    "test:unit": "vitest run tests/unit --passWithNoTests",
-    "test:int": "vitest run tests/integration --passWithNoTests",
+    "test": "vitest run",
+    "test:unit": "vitest run tests/unit",
+    "test:int": "vitest run tests/intergration",
     "test:watch": "vitest",
     "ci": "npm typecheck && npm lint && npm test",
-    "db:migrate": "node scripts/migrate.js"
+    "db:migrate": "tsx scripts/migrate.ts"
   },
   "dependencies": {
     "dotenv": "17.4.2",

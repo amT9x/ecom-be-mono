@@ -2,7 +2,7 @@
 set -euo pipefail
 
 MODE="${1:-dev}"
-CONTAINER="${DB_CONTAINER:-postgres-ci}"
+CONTAINER="${DB_CONTAINER:-postgres}"
 
 echo "==> Waiting for postgres..."
 

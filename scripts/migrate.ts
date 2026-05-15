@@ -1,18 +1,10 @@
-import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
 import { Client } from 'pg';
-
-const DB_HOST = process.env.DB_HOST;
-const DB_PORT = process.env.DB_PORT;
-const DB_USER = process.env.DB_USER;
-const DB_PASSWORD = process.env.DB_PASSWORD;
-const DB_NAME = process.env.DB_NAME;
-
-const DATABASE_URL = `postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}`;
+import { env } from '../src/config/env.js';
 
 const client = new Client({
-  connectionString: DATABASE_URL,
+  connectionString: env.DB_URL,
 });
 
 await client.connect();
@@ -33,7 +25,7 @@ for (const file of files) {
     [file],
   );
 
-  if (res.rowCount > 0) {
+  if ((res.rowCount ?? 0) > 0) {
     console.log('Skipping:', file);
     continue;
   }

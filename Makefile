@@ -11,9 +11,9 @@ config-env:
 
 COMPOSE=docker compose -f docker/docker-compose.yml
 
-create-env-ci:
+create-env-test:
 	@echo "==> Create env file..."
-	cp .env.ci .env
+	cp .env.test .env
 	@echo "✅ Create env file... done"
 
 # ==================================================
@@ -34,6 +34,9 @@ dk-logs:
 dk-build-app-ci:
 	@./scripts/docker/ci_pipeline.sh build
 
+dk-build-test-int-ci:
+	@./scripts/docker/ci_pipeline.sh build-test-int
+
 dk-create-network-ci:
 	@./scripts/docker/ci_pipeline.sh network
 
@@ -42,6 +45,9 @@ dk-run-postgres-ci:
 
 dk-run-app-ci:
 	@./scripts/docker/ci_pipeline.sh app
+
+dk-run-test-int-ci:
+	@./scripts/docker/ci_pipeline.sh test-int
 
 dk-debug-app-ci:
 	@./scripts/docker/ci_pipeline.sh debug
@@ -78,6 +84,9 @@ db-access-user-postgres:
 
 db-access-user-ecom:
 	@./scripts/db/manage.sh access-user-ecom
+
+db-access-db-test:
+	@./scripts/db/manage.sh access-db-test
 
 db-extensions:
 	@./scripts/db/extensions.sh

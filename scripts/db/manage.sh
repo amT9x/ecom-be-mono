@@ -13,6 +13,9 @@ set +a
 
 DB_CONTAINER="${DB_CONTAINER:-infra-wsl2-postgres-1}"
 
+DB_USER="${DB_USER:-$(echo "$DB_URL" | sed -E 's|postgresql://([^:]+):.*|\1|')}"
+DB_NAME="${DB_NAME:-$(echo "$DB_URL" | sed -E 's|.*/([^/?]+).*|\1|')}"
+
 PSQL_BASE="docker exec -i $DB_CONTAINER psql -U postgres -d postgres -v ON_ERROR_STOP=1"
 PSQL_ECOM="docker exec -i $DB_CONTAINER psql -U $DB_USER -d $DB_NAME -v ON_ERROR_STOP=1"
 
@@ -101,6 +104,10 @@ access_user_ecom() {
 	docker exec -it infra-wsl2-postgres-1 psql -U ecom_app -d ecom_mono
 }
 
+access_db_test() {
+	docker exec -it infra-wsl2-postgres-1 psql -U ecom_app -d ecom_test
+}
+
 
 case "$ACTION" in
   create-user-dev) create_user-dev ;;
@@ -112,6 +119,7 @@ case "$ACTION" in
   reset-schema) reset_schema ;;
   access-user-postgres) access_user_postgres ;;
   access-user-ecom) access_user_ecom ;;
+  access-db-test) access_db_test ;;
   *)
     echo "Usage: $0 {create-user|create-db|drop-db}"
     exit 1

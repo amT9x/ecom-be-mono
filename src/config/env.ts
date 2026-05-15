@@ -1,7 +1,15 @@
 import dotenv from 'dotenv';
 import { z } from 'zod';
 
-dotenv.config({ quiet: true });
+const NODE_ENV = process.env.NODE_ENV ?? 'development';
+
+if (NODE_ENV !== 'production') {
+  const envFile = NODE_ENV === 'test' ? '.env.test' : '.env';
+
+  dotenv.config({
+    path: envFile,
+  });
+}
 
 const envSchema = z.object({
   NODE_ENV: z
@@ -12,11 +20,7 @@ const envSchema = z.object({
   HOST: z.string(),
   PORT: z.coerce.number(),
 
-  DB_HOST: z.string(),
-  DB_PORT: z.coerce.number(),
-  DB_USER: z.string(),
-  DB_PASSWORD: z.string(),
-  DB_NAME: z.string(),
+  DB_URL: z.string(),
 });
 
 export const env = envSchema.parse(process.env);
