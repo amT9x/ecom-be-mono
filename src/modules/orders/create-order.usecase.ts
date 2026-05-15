@@ -10,7 +10,7 @@ export class CreateOrderUseCase {
     private pool: Pool,
   ) {}
 
-  async execute(productId: string, quantity: number) {
+  async execute(productId: string, quantity: number, price: number) {
     const client = await this.pool.connect();
 
     try {
@@ -22,9 +22,9 @@ export class CreateOrderUseCase {
 
       await inventoryService.reserveStock(productId, quantity);
 
-      const order = await orderRepo.create();
+      const order = await orderRepo.create(0);
 
-      await orderRepo.addItem(order.id, productId, quantity);
+      await orderRepo.addItem(order.id, productId, quantity, price);
 
       await client.query('COMMIT');
 

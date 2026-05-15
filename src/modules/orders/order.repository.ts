@@ -1,5 +1,5 @@
 export interface OrderRepository {
-  create(): Promise<{ id: string }>;
+  create(totalAmount: number): Promise<{ id: string }>;
 
-  addItem(orderId: string, productId: string, quantity: number): Promise<void>;
+  addItem(orderId: string, productId: string, quantity: number, price: number): Promise<void>;
 }

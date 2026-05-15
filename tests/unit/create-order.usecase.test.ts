@@ -56,7 +56,7 @@ describe('CreateOrderUseCase', () => {
           pool,
         );
 
-        const result = await usecase.execute('p1', 2);
+        const result = await usecase.execute('p1', 2, 100);
 
         expect(client.query).toHaveBeenCalledWith('BEGIN');
 
@@ -64,7 +64,7 @@ describe('CreateOrderUseCase', () => {
 
         expect(orderRepo.create).toHaveBeenCalled();
 
-        expect(orderRepo.addItem).toHaveBeenCalledWith('order-1', 'p1', 2);
+        expect(orderRepo.addItem).toHaveBeenCalledWith('order-1', 'p1', 2, 100);
 
         expect(client.query).toHaveBeenCalledWith('COMMIT');
 
@@ -76,7 +76,7 @@ describe('CreateOrderUseCase', () => {
   it('should rollback if reserve stock fails', async () => {
     inventoryService.reserveStock.mockRejectedValue(new Error('no stock'));
 
-    await expect(orderUsecase.execute('p1', 2)).rejects.toThrow('no stock');
+    await expect(orderUsecase.execute('p1', 2, 100)).rejects.toThrow('no stock');
 
     expect(client.query).toHaveBeenCalledWith('BEGIN');
 
@@ -88,7 +88,7 @@ describe('CreateOrderUseCase', () => {
   it('should rollback if create order fails', async () => {
     orderRepo.create.mockRejectedValue(new Error('db error'));
 
-    await expect(orderUsecase.execute('p1', 2)).rejects.toThrow('db error');
+    await expect(orderUsecase.execute('p1', 2, 100)).rejects.toThrow('db error');
 
     expect(inventoryService.reserveStock).toHaveBeenCalled();
 
@@ -100,7 +100,7 @@ describe('CreateOrderUseCase', () => {
   it('should release client', async () => {
     inventoryService.reserveStock.mockRejectedValue(new Error('boom'));
 
-    await expect(orderUsecase.execute('p1', 2)).rejects.toThrow();
+    await expect(orderUsecase.execute('p1', 2, 100)).rejects.toThrow();
 
     expect(client.release).toHaveBeenCalled();
   });
