@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { Pool } from 'pg';
 import { InventoryService } from '../../src/modules/inventory/inventory.service.js';
-import { InventoryRepository } from '../../src/modules/inventory/inventory.repository.js';
+import { PostgestInventoryRepository } from '../../src/modules/inventory/postgres-inventory.repository.js';
 import { NotFoundError } from '../../src/shared/errors/http-error.js';
 
 async function main() {
@@ -15,7 +15,7 @@ async function main() {
   try {
     await client.query('BEGIN');
 
-    const repo = new InventoryRepository(client);
+    const repo = new PostgestInventoryRepository(client);
     const service = new InventoryService(repo);
 
     const { rows } = await observer.query(`
