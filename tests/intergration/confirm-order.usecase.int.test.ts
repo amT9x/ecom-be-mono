@@ -25,12 +25,12 @@ describe('ConfirmOrderUseCase test-int', () => {
   it('should confirm pending order', async () => {
     const usecase = new ConfirmOrderUseCase(testPool);
 
-    const result = await usecase.execute('order-1');
+    const result = await usecase.execute(orderId);
 
     expect(result.status).toBe('CONFIRMED');
 
     const res = await testPool.query(
-      `SELECT status FROM orders WHERE id='order-1'`,
+      `SELECT status FROM orders WHERE id=$1`, [orderId],
     );
 
     expect(res.rows[0].status).toBe('CONFIRMED');
