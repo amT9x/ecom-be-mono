@@ -1,5 +1,4 @@
 import { env } from '../config/env.js';
-import { connectDB } from '../app/loaders/db.loader.js';
 import { buildApp } from './app.js';
 import { systemLogger } from '../infrastructure/logger/index.js';
 
@@ -7,7 +6,6 @@ const HOST = env.HOST || '0.0.0.0';
 const PORT = env.PORT || 3000;
 
 const startServer = async () => {
-  await connectDB();
   const app = buildApp();
 
   try {

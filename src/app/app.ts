@@ -1,5 +1,5 @@
 import Fastify from 'fastify';
-import { pool } from '../config/database.js';
+import { initializeDB } from '../config/database.js';
 import { loggerConfig } from '../config/logger.config.js';
 import { requestContextPlugin } from '../plugins/request-context.plugin.js';
 import { loggerPlugin } from '../plugins/request-lifecycle-logger.plugin.js';
@@ -11,6 +11,8 @@ export function buildApp() {
     logger: loggerConfig,
     disableRequestLogging: true,
   });
+
+  const pool = initializeDB();
 
   app.register(requestContextPlugin);
   app.register(errorHandler);
