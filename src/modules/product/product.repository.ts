@@ -26,46 +26,50 @@ export async function createProduct(data: any) {
 }
 
 export async function findProducts(options: FindProductsOptions) {
-  const { cursor, limit, page, sortField, sortOrder } = options;
-  requestContext.set('repo', 'findProducts');
-  let query = `
-    SELECT *
-    FROM products
-  `;
-
-  const values: any[] = [];
-
-  // CURSOR PAGINATION
-  if (cursor) {
-    const operator = sortOrder === 'desc' ? '<' : '>';
-
-    query += `
-      WHERE (${sortField}, id) ${operator} ($1, $2)
+  try {
+    const { cursor, limit, page, sortField, sortOrder } = options;
+    requestContext.set('repo', 'findProducts');
+    let query = `
+      SELECT *
+      FROM products
     `;
 
-    values.push(cursor.created_at, cursor.id);
+    const values: any[] = [];
+
+    // CURSOR PAGINATION
+    if (cursor) {
+      const operator = sortOrder === 'desc' ? '<' : '>';
+
+      query += `
+        WHERE (${sortField}, id) ${operator} ($1, $2)
+      `;
+
+      values.push(cursor.created_at, cursor.id);
+    }
+
+    // SORT
+    query += `
+      ORDER BY ${sortField} ${sortOrder.toUpperCase()},
+              id ${sortOrder.toUpperCase()}
+    `;
+
+    // OFFSET PAGINATION
+    if (page && !cursor) {
+      const offset = (page - 1) * limit;
+      query += ` OFFSET $${values.length + 1}`;
+      values.push(offset);
+    }
+
+    // LIMIT + 1 trick
+    query += ` LIMIT $${values.length + 1}`;
+    values.push(limit + 1);
+
+    const result = await pool.query(query, values);
+
+    return result.rows;
+  } catch (error) {
+    throw error;
   }
-
-  // SORT
-  query += `
-    ORDER BY ${sortField} ${sortOrder.toUpperCase()},
-             id ${sortOrder.toUpperCase()}
-  `;
-
-  // OFFSET PAGINATION
-  if (page && !cursor) {
-    const offset = (page - 1) * limit;
-    query += ` OFFSET $${values.length + 1}`;
-    values.push(offset);
-  }
-
-  // LIMIT + 1 trick
-  query += ` LIMIT $${values.length + 1}`;
-  values.push(limit + 1);
-
-  const result = await pool.query(query, values);
-
-  return result.rows;
 }
 
 export async function findProductById(id: string) {
