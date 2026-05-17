@@ -1,0 +1,19 @@
+import { Pool } from "pg";
+
+export async function seedProduct (pool: Pool, PRODUCT_ID: string, productsName: string, productPrice: number) {
+  await pool.query(
+    `INSERT INTO products(id, name, price)
+       VALUES ($1,$2,$3)`,
+    [PRODUCT_ID, productsName, productPrice],
+  );
+}
+
+export async function seedInventory (pool: Pool, PRODUCT_ID: string, total_stock: number, reserved_stock: number) {
+  await pool.query(
+    `
+      INSERT INTO inventory (product_id, total_stock, reserved_stock)
+      VALUES ($1, $2, $3)
+    `,
+    [PRODUCT_ID, total_stock, reserved_stock],
+  )
+}
