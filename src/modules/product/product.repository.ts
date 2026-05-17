@@ -1,4 +1,4 @@
-import { pool } from '../../config/database.js';
+import { initializeDB } from '../../config/database.js';
 import crypto from 'node:crypto';
 import { requestContext } from '../../infrastructure/context/request-context.js';
 
@@ -9,6 +9,8 @@ type FindProductsOptions = {
   sortField: string;
   sortOrder: 'asc' | 'desc';
 };
+
+const pool = initializeDB();
 
 export async function createProduct(data: any) {
   const id = crypto.randomUUID();
