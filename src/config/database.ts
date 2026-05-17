@@ -11,6 +11,8 @@ export function initializeDB() {
   pool = new Pool({
     connectionString: env.DB_URL,
     max: 20, // connection pool size
+    connectionTimeoutMillis: 3000,
+    query_timeout: 5000,
   });
 
   pool.on('connect', () => {
