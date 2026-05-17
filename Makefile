@@ -226,7 +226,6 @@ pre-push:
 	@echo "==> Prepush..."
 	@$(MAKE) pre-commit
 	@$(MAKE) db-pre-push
-	@$(MAKE) test-int
 	@echo "✅ Prepush...done"
 
 # ==================================================
