@@ -2,29 +2,12 @@ import { describe, it, beforeEach, expect } from 'vitest';
 import { CreateOrderUseCase } from '../../src/modules/orders/create-order.usecase';
 import { PRODUCT_ID } from '../setup/constanst.ts';
 import { testPool, resetDatabase } from '../setup/test_db.ts';
+import { seedInventory, seedProduct } from '../setup/seed-test.ts';
 
 const productsName = 'Test Product';
 const productPrice = 100;
 const total_stock = 10;
 const reserved_stock = 0;
-
-async function seedProducts() {
-  await testPool.query(
-    `INSERT INTO products(id, name, price)
-       VALUES ($1,$2,$3)`,
-    [PRODUCT_ID, productsName, productPrice],
-  );
-}
-
-async function seedInventory() {
-  await testPool.query(
-    `
-      INSERT INTO inventory (product_id, total_stock, reserved_stock)
-      VALUES ($1, $2, $3)
-    `,
-    [PRODUCT_ID, total_stock, reserved_stock],
-  );
-}
 
 
 describe('Order Transaction', () => {
@@ -32,8 +15,8 @@ describe('Order Transaction', () => {
 
   beforeEach(async () => {
     await resetDatabase();
-    await seedProducts();
-    await seedInventory();
+    await seedProduct(testPool, PRODUCT_ID, productsName, productPrice);
+    await seedInventory(testPool, PRODUCT_ID, total_stock, reserved_stock);
   });
 
   it('should commit transaction when order succeeds', async () => {
