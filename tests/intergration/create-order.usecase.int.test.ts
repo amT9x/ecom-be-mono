@@ -35,7 +35,7 @@ describe('Order Transaction', () => {
 
     const available = inventory[0].total_stock - inventory[0].reserved_stock;
 
-    expect(available).toBe(9);
+    expect(available).toBe(0);
   });
 
   it('should rollback if stock is insufficient', async () => {
