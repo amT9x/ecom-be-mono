@@ -1,27 +1,21 @@
 import { describe, it, beforeEach, expect } from 'vitest';
 import { CreateOrderUseCase } from '../../src/modules/orders/create-order.usecase';
-import { PRODUCT_ID } from '../setup/constanst.ts';
+import { INVENTORY_RESERVED_STOCK, INVENTORY_TOTAL_STOCK, PRODUCT_ID, PRODUCT_NAME, PRODUCT_PRICE, QUANTITY } from '../setup/constanst.ts';
 import { testPool, resetDatabase } from '../setup/test_db.ts';
 import { seedInventory, seedProduct } from '../setup/seed-test.ts';
-
-const productsName = 'Test Product';
-const productPrice = 100;
-const total_stock = 10;
-const reserved_stock = 0;
-
 
 describe('Order Transaction', () => {
   const usecase = new CreateOrderUseCase(testPool);
 
   beforeEach(async () => {
     await resetDatabase();
-    await seedProduct(testPool, PRODUCT_ID, productsName, productPrice);
-    await seedInventory(testPool, PRODUCT_ID, total_stock, reserved_stock);
+    await seedProduct(testPool, PRODUCT_ID, PRODUCT_NAME, PRODUCT_PRICE);
+    await seedInventory(testPool, PRODUCT_ID, INVENTORY_TOTAL_STOCK, INVENTORY_RESERVED_STOCK);
   });
 
   it('should commit transaction when order succeeds', async () => {
 
-    const result = await usecase.execute(PRODUCT_ID, 1, 100);
+    const result = await usecase.execute(PRODUCT_ID, QUANTITY, PRODUCT_PRICE);
 
     expect(result.id).toBeDefined();
 
