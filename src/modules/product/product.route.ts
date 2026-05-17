@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import * as controller from './product.controller.js';
 import { createProductSchema } from './product.schema.js';
 
-export async function productRoutes(app: FastifyInstance) {
+export async function productRoutes(app: FastifyInstance, pool: any) {
   app.post(
     '/products',
     { schema: createProductSchema },

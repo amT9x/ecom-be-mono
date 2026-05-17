@@ -1,12 +1,10 @@
 import { Pool } from 'pg';
 import { InventoryService } from '../inventory/inventory.service.js';
-import { InventoryRepository } from '../inventory/inventory.repository.js';
-import { OrderRepository } from './order.repository.js';
+import { PostgresOrderRepository } from './postgres-order.repository.js';
+import { PostgestInventoryRepository } from '../inventory/postgres-inventory.repository.js';
 
 export class CreateOrderUseCase {
   constructor(
-    private inventoryServiceFactory: (client: any) => InventoryService,
-    private orderRepoFactory: (client: any) => OrderRepository,
     private pool: Pool,
   ) {}
 
@@ -16,9 +14,11 @@ export class CreateOrderUseCase {
     try {
       await client.query('BEGIN');
 
-      const inventoryService = this.inventoryServiceFactory(client);
+      // inject transaction connection
+      const orderRepo = new PostgresOrderRepository(client);
+      const inventoryRepo = new PostgestInventoryRepository(client);
 
-      const orderRepo = this.orderRepoFactory(client);
+      const inventoryService = new InventoryService(inventoryRepo);
 
       await inventoryService.reserveStock(productId, quantity);
 

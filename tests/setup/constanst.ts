@@ -1,3 +1,15 @@
 export const PRODUCT_ID = '11111111-1111-1111-1111-111111111111';
+export const PRODUCT_PRICE = 100000;
+export const PRODUCT_NAME = 'Product 1';
+
+export const QUANTITY = 10;
+
+export const INVENTORY_TOTAL_STOCK = 10;
+export const INVENTORY_RESERVED_STOCK = 0;
 
 export const ORDER_ID = '22222222-2222-2222-2222-222222222222';
+export enum ORDER_STATUS {
+  PENDING = 'PENDING',
+  CONFIRMED = 'CONFIRMED',
+}
+export const TOTAL_AMOUNT_ORDER = 100;

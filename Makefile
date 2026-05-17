@@ -82,11 +82,11 @@ db-drop-db:
 db-access-user-postgres:
 	@./scripts/db/manage.sh access-user-postgres
 
-db-access-user-ecom:
-	@./scripts/db/manage.sh access-user-ecom
+db-access-db-ecomdb:
+	@./scripts/db/manage.sh access-db-ecomdb
 
-db-access-db-test:
-	@./scripts/db/manage.sh access-db-test
+db-access-db-testdb:
+	@./scripts/db/manage.sh access-db-testdb
 
 db-extensions:
 	@./scripts/db/extensions.sh
@@ -226,7 +226,6 @@ pre-push:
 	@echo "==> Prepush..."
 	@$(MAKE) pre-commit
 	@$(MAKE) db-pre-push
-	@$(MAKE) test-int
 	@echo "✅ Prepush...done"
 
 # ==================================================

@@ -100,12 +100,12 @@ access_user_postgres() {
   docker exec -it infra-wsl2-postgres-1 psql -U postgres
 }
 
-access_user_ecom() {
+access_db_ecomdb() {
 	docker exec -it infra-wsl2-postgres-1 psql -U ecom_app -d ecom_mono
 }
 
-access_db_test() {
-	docker exec -it infra-wsl2-postgres-1 psql -U ecom_app -d ecom_test
+access_db_testdb() {
+	docker exec -it infra-wsl2-postgres-1 psql -U test -d testdb
 }
 
 
@@ -118,8 +118,8 @@ case "$ACTION" in
   reset-data) reset_data ;;
   reset-schema) reset_schema ;;
   access-user-postgres) access_user_postgres ;;
-  access-user-ecom) access_user_ecom ;;
-  access-db-test) access_db_test ;;
+  access-db-ecomdb) access_db_ecomdb ;;
+  access-db-testdb) access_db_testdb ;;
   *)
     echo "Usage: $0 {create-user|create-db|drop-db}"
     exit 1
