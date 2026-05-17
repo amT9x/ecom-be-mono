@@ -4,14 +4,15 @@ import { ConfirmOrderUseCase } from "../../src/modules/orders/confirm-order.usec
 
 const orderId = '11111111-1111-1111-1111-111111111111';
 const status = 'PENDING';
+const total_amount = 100;
 
 async function seedOrder() {
   await testPool.query(
     `
-    INSERT INTO orders(id, status)
-    VALUES ($1, $2)
+    INSERT INTO orders(id, status, total_amount)
+    VALUES ($1, $2, $3)
   `,
-    [orderId, status],
+    [orderId, status, total_amount],
   );
 }
 
