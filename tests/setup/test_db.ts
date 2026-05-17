@@ -5,6 +5,8 @@ if (!env.DB_URL) {
   throw new Error('DB_URL missing');
 }
 
+console.log('DB_URL', env.DB_URL);
+
 export const testPool = new Pool({
   connectionString:
     env.DB_URL
@@ -12,6 +14,6 @@ export const testPool = new Pool({
 
 export async function resetDatabase() {
   await testPool.query(`
-    TRUNCATE inventory, products RESTART IDENTITY CASCADE;
+    TRUNCATE inventory, products, orders, order_items RESTART IDENTITY CASCADE;
   `);
 }
