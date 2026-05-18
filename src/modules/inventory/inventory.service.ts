@@ -16,20 +16,22 @@ export class InventoryService {
     return available >= quantity;
   }
 
-  async reserveStock(productId: string, quantity: number) {
-    const inventory = await this.repo.findByProductId(productId);
+  async reserveStock(items: { productId: string; quantity: number }[]) {
+    for (const item of items) {
+      const inventory = await this.repo.findByProductId(item.productId);
 
-    if (!inventory) {
-      throw new NotFoundError('Inventory not found');
+      if (!inventory) {
+        throw new NotFoundError('Inventory not found');
+      }
+
+      const available = inventory.total_stock - inventory.reserved_stock;
+
+      if (available < item.quantity) {
+        throw new Error('Insufficient stock');
+      }
+
+      await this.repo.reserveStock(item.productId, item.quantity);
     }
-
-    const available = inventory.total_stock - inventory.reserved_stock;
-
-    if (available < quantity) {
-      throw new Error('Insufficient stock');
-    }
-
-    await this.repo.reserveStock(productId, quantity);
   }
 
   async releaseStock(productId: string, quantity: number) {

@@ -27,17 +27,17 @@ export class PostgresOrderRepository implements OrderRepository {
 
   async addItem(
     orderId: string,
-    productId: string,
-    quantity: number,
-    price: number,
+    items: { productId: string; quantity: number; price: number }[],
   ): Promise<void> {
-    await this.db.query(
-      `
-      INSERT INTO order_items(order_id, product_id, quantity, price)
-      VALUES ($1,$2,$3,$4)
-      `,
-      [orderId, productId, quantity, price],
-    );
+    for (const item of items) {
+      await this.db.query(
+        `
+        INSERT INTO order_items(order_id, product_id, quantity, price)
+        VALUES ($1,$2,$3,$4)
+        `,
+        [orderId, item.productId, item.quantity, item.price],
+      );
+    }
   }
 
   async findById(id: string): Promise<Order | null> {

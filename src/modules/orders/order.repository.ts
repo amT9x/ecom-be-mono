@@ -6,9 +6,7 @@ export interface OrderRepository {
 
   addItem(
     orderId: string,
-    productId: string,
-    quantity: number,
-    price: number,
+    items: { productId: string; quantity: number; price: number }[],
   ): Promise<void>;
 
   findById(id: string): Promise<Order | null>;
