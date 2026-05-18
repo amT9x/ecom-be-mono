@@ -3,31 +3,14 @@ import { testPool, resetDatabase } from '../setup/test_db.js';
 import { InventoryRepository } from '../../src/modules/inventory/inventory.repository.js';
 import { PostgestInventoryRepository } from '../../src/modules/inventory/postgres-inventory.repository.js';
 import { InventoryService } from '../../src/modules/inventory/inventory.service';
-
-const PRODUCT_ID = '11111111-1111-1111-1111-111111111111';
-const item1 = 'Item-test 1';
-const price = 10000;
-const total_stock = 10;
-const reserved_stock = 0;
-
-async function seedInventory() {
-  await testPool.query(
-    `INSERT INTO products(id, name, price)
-     VALUES ($1,$2,$3)`,
-    [PRODUCT_ID, item1, price],
-  );
-
-  await testPool.query(
-    `INSERT INTO inventory(product_id,total_stock,reserved_stock)
-     VALUES ($1,$2,$3)`,
-    [PRODUCT_ID, total_stock, reserved_stock],
-  );
-}
+import { PRODUCT, INVENTORY } from '../setup/constanst.js';
+import { seedProduct,seedInventory } from '../setup/seed-test.js';
 
 describe('Inventory Transaction', () => {
   beforeEach(async () => {
     await resetDatabase();
-    await seedInventory();
+    await seedProduct(testPool, PRODUCT.id, PRODUCT.name, PRODUCT.price);
+    await seedInventory(testPool, PRODUCT.id, INVENTORY.total_stock, INVENTORY.reserved_stock);
   });
 
   it('should reserve stock inside transaction', async () => {
@@ -39,7 +22,10 @@ describe('Inventory Transaction', () => {
       const repo = new PostgestInventoryRepository(client);
       const service = new InventoryService(repo);
 
-      await service.reserveStock(PRODUCT_ID, 3);
+      await service.reserveStock([{
+        productId: PRODUCT.id,
+        quantity: 3
+      }]);
 
       await client.query('COMMIT');
     } catch (error) {
@@ -52,7 +38,7 @@ describe('Inventory Transaction', () => {
 
     const result = await testPool.query(
       `SELECT reserved_stock FROM inventory WHERE product_id=$1`
-      , [PRODUCT_ID]
+      , [PRODUCT.id]
     );
 
     expect(result.rows[0].reserved_stock).toBe(3);

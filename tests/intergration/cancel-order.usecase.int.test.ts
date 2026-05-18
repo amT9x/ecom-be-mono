@@ -4,15 +4,15 @@ import { testPool, resetDatabase } from '../setup/test_db';
 
 import { CancelOrderUseCase } from '../../src/modules/orders/cancel-order.usecase';
 
-import { ORDER_ID, ORDER_STATUS, TOTAL_AMOUNT_ORDER } from '../setup/constanst';
+import { ORDER } from '../setup/constanst';
 
-async function seedOrder(status = ORDER_STATUS.PENDING) {
+async function seedOrder(status = ORDER.status.PENDING) {
   await testPool.query(
     `
     INSERT INTO orders(id, status, total_amount)
     VALUES ($1, $2, $3)
   `,
-    [ORDER_ID, status, TOTAL_AMOUNT_ORDER],
+    [ORDER.id, status, ORDER.total_amount],
   );
 }
 
@@ -22,29 +22,29 @@ describe('CancelOrderUseCase test-int', () => {
   });
 
   it('should cancel pending order', async () => {
-    await seedOrder(ORDER_STATUS.PENDING);
+    await seedOrder(ORDER.status.PENDING);
 
     const usecase = new CancelOrderUseCase(testPool);
 
-    const result = await usecase.execute(ORDER_ID);
+    const result = await usecase.execute(ORDER.id);
 
-    expect(result.status).toBe(ORDER_STATUS.CANCELLED);
+    expect(result.status).toBe(ORDER.status.CANCELLED);
 
     const res = await testPool.query(`SELECT status FROM orders WHERE id=$1`, [
-      ORDER_ID,
+      ORDER.id,
     ]);
 
-    expect(res.rows[0].status).toBe(ORDER_STATUS.CANCELLED);
+    expect(res.rows[0].status).toBe(ORDER.status.CANCELLED);
   });
 
   it('should cancel confirmed order', async () => {
-    await seedOrder(ORDER_STATUS.CONFIRMED);
+    await seedOrder(ORDER.status.CONFIRMED);
 
     const usecase = new CancelOrderUseCase(testPool);
 
-    const result = await usecase.execute(ORDER_ID);
+    const result = await usecase.execute(ORDER.id);
 
-    expect(result.status).toBe(ORDER_STATUS.CANCELLED);
+    expect(result.status).toBe(ORDER.status.CANCELLED);
   });
 
   //future

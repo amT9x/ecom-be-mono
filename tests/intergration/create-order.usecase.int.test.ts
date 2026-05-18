@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, expect } from 'vitest';
 import { CreateOrderUseCase } from '../../src/modules/orders/create-order.usecase';
-import { INVENTORY_RESERVED_STOCK, INVENTORY_TOTAL_STOCK, PRODUCT_ID, PRODUCT_NAME, PRODUCT_PRICE, QUANTITY, USER_ID } from '../setup/constanst.ts';
+import { PRODUCT, USER, QUANTITY, INVENTORY} from '../setup/constanst.ts';
 import { testPool, resetDatabase } from '../setup/test_db.ts';
 import { seedInventory, seedProduct } from '../setup/seed-test.ts';
 
@@ -9,23 +9,23 @@ describe('Order Transaction', () => {
 
   beforeEach(async () => {
     await resetDatabase();
-    await seedProduct(testPool, PRODUCT_ID, PRODUCT_NAME, PRODUCT_PRICE);
+    await seedProduct(testPool, PRODUCT.id, PRODUCT.name, PRODUCT.price);
     await seedInventory(
       testPool,
-      PRODUCT_ID,
-      INVENTORY_TOTAL_STOCK,
-      INVENTORY_RESERVED_STOCK,
+      PRODUCT.id,
+      INVENTORY.total_stock,
+      INVENTORY.reserved_stock
     );
   });
 
   it('should commit transaction when order succeeds', async () => {
     const result = await usecase.execute({
-      userId: USER_ID,
+      userId: USER.id,
       items: [
         {
-          productId: PRODUCT_ID,
+          productId: PRODUCT.id,
           quantity: QUANTITY,
-          price: PRODUCT_PRICE,
+          price: 100,
         },
       ],
     });
@@ -43,18 +43,18 @@ describe('Order Transaction', () => {
     // verify stock reduced
     const { rows: inventory } = await testPool.query(
       'SELECT total_stock, reserved_stock FROM inventory WHERE product_id = $1',
-      [PRODUCT_ID],
+      [PRODUCT.id],
     );
 
     const available = inventory[0].total_stock - inventory[0].reserved_stock;
 
     expect(available).toBe(0);
   });
-  
+
   it('should rollback if stock is insufficient', async () => {
     await expect(
       usecase.execute({
-        userId: USER_ID,
+        userId: USER.id,
         items: [
           {
             productId: 'non-existing-product',
@@ -73,7 +73,7 @@ describe('Order Transaction', () => {
     // verify stock unchanged
     const { rows: inventory } = await testPool.query(
       'SELECT total_stock, reserved_stock FROM inventory WHERE product_id = $1',
-      [PRODUCT_ID],
+      [PRODUCT.id],
     );
 
     expect(inventory[0].total_stock).toBe(10);

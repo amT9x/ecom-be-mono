@@ -1,18 +1,28 @@
-export const PRODUCT_ID = '11111111-1111-1111-1111-111111111111';
-export const PRODUCT_PRICE = 100000;
-export const PRODUCT_NAME = 'Product 1';
+export const PRODUCT = {
+  id: '11111111-1111-1111-1111-111111111111',
+  name: 'Product 1',
+  price: 100000,
+}
 
 export const QUANTITY = 10;
 
-export const INVENTORY_TOTAL_STOCK = 10;
-export const INVENTORY_RESERVED_STOCK = 0;
-
-export const ORDER_ID = '22222222-2222-2222-2222-222222222222';
-export enum ORDER_STATUS {
-  PENDING = 'PENDING',
-  CONFIRMED = 'CONFIRMED',
-  CANCELLED = 'CANCELLED',
+export const INVENTORY = {
+  total_stock: 10,
+  reserved_stock: 0,
 }
-export const TOTAL_AMOUNT_ORDER = 100;
 
-export const USER_ID = '33333333-3333-3333-3333-333333333333';
+export const ORDER = {
+  id: '22222222-2222-2222-2222-222222222222',
+  status: {
+    PENDING: 'PENDING',
+    CONFIRMED: 'CONFIRMED',
+    CANCELLED: 'CANCELLED',
+  },
+  total_amount: 100,
+};
+
+export const USER = {
+  id: '33333333-3333-3333-3333-333333333333',
+  username: 'admin',
+  password: 'admin',
+}
