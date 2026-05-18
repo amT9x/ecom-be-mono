@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, expect } from 'vitest';
 import { CreateOrderUseCase } from '../../src/modules/orders/create-order.usecase';
-import { INVENTORY_RESERVED_STOCK, INVENTORY_TOTAL_STOCK, PRODUCT_ID, PRODUCT_NAME, PRODUCT_PRICE, QUANTITY } from '../setup/constanst.ts';
+import { INVENTORY_RESERVED_STOCK, INVENTORY_TOTAL_STOCK, PRODUCT_ID, PRODUCT_NAME, PRODUCT_PRICE, QUANTITY, USER_ID } from '../setup/constanst.ts';
 import { testPool, resetDatabase } from '../setup/test_db.ts';
 import { seedInventory, seedProduct } from '../setup/seed-test.ts';
 
@@ -10,12 +10,25 @@ describe('Order Transaction', () => {
   beforeEach(async () => {
     await resetDatabase();
     await seedProduct(testPool, PRODUCT_ID, PRODUCT_NAME, PRODUCT_PRICE);
-    await seedInventory(testPool, PRODUCT_ID, INVENTORY_TOTAL_STOCK, INVENTORY_RESERVED_STOCK);
+    await seedInventory(
+      testPool,
+      PRODUCT_ID,
+      INVENTORY_TOTAL_STOCK,
+      INVENTORY_RESERVED_STOCK,
+    );
   });
 
   it('should commit transaction when order succeeds', async () => {
-
-    const result = await usecase.execute(PRODUCT_ID, QUANTITY, PRODUCT_PRICE);
+    const result = await usecase.execute({
+      userId: USER_ID,
+      items: [
+        {
+          productId: PRODUCT_ID,
+          quantity: QUANTITY,
+          price: PRODUCT_PRICE,
+        },
+      ],
+    });
 
     expect(result.id).toBeDefined();
 
@@ -37,10 +50,19 @@ describe('Order Transaction', () => {
 
     expect(available).toBe(0);
   });
-
+  
   it('should rollback if stock is insufficient', async () => {
     await expect(
-      usecase.execute('non-existing-product', 999, 100),
+      usecase.execute({
+        userId: USER_ID,
+        items: [
+          {
+            productId: 'non-existing-product',
+            quantity: 999,
+            price: 100,
+          },
+        ],
+      }),
     ).rejects.toThrow();
 
     // verify NO order created
