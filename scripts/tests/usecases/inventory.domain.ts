@@ -1,8 +1,8 @@
 import 'dotenv/config';
 import { Pool } from 'pg';
-import { InventoryService } from '../../src/modules/inventory/inventory.service.js';
-import { PostgestInventoryRepository } from '../../src/modules/inventory/postgres-inventory.repository.js';
-import { NotFoundError } from '../../src/shared/errors/http-error.js';
+import { PostgestInventoryRepository } from '../../../src/modules/inventory/postgres-inventory.repository.js';
+import { InventoryService } from '../../../src/modules/inventory/inventory.service.js';
+import { NotFoundError } from '../../../src/shared/errors/http-error.js';
 
 async function main() {
   const pool = new Pool({
