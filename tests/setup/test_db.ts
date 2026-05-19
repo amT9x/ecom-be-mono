@@ -14,6 +14,6 @@ export const testPool = new Pool({
 
 export async function resetDatabase() {
   await testPool.query(`
-    TRUNCATE inventory, products, orders, order_items RESTART IDENTITY CASCADE;
+    TRUNCATE inventory, products, orders, order_items, payments RESTART IDENTITY CASCADE;
   `);
 }

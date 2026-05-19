@@ -21,7 +21,9 @@
     "test": "vitest run",
     "test:unit": "vitest run tests/unit",
     "test:int": "vitest run tests/intergration",
+    "test:usecases": "vitest run tests/usecases",
     "test:watch": "vitest",
+    "test:e2e": "vitest run tests/e2e",
     "ci": "npm typecheck && npm lint && npm test",
     "db:migrate": "tsx scripts/migrate.ts"
   },

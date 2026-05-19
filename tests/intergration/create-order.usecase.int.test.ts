@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, expect } from 'vitest';
 import { CreateOrderUseCase } from '../../src/modules/orders/create-order.usecase';
-import { INVENTORY_RESERVED_STOCK, INVENTORY_TOTAL_STOCK, PRODUCT_ID, PRODUCT_NAME, PRODUCT_PRICE, QUANTITY } from '../setup/constanst.ts';
+import { PRODUCT, USER, QUANTITY, INVENTORY} from '../setup/constanst.ts';
 import { testPool, resetDatabase } from '../setup/test_db.ts';
 import { seedInventory, seedProduct } from '../setup/seed-test.ts';
 
@@ -9,13 +9,27 @@ describe('Order Transaction', () => {
 
   beforeEach(async () => {
     await resetDatabase();
-    await seedProduct(testPool, PRODUCT_ID, PRODUCT_NAME, PRODUCT_PRICE);
-    await seedInventory(testPool, PRODUCT_ID, INVENTORY_TOTAL_STOCK, INVENTORY_RESERVED_STOCK);
+    await seedProduct(testPool, PRODUCT.id, PRODUCT.name, PRODUCT.price);
+    await seedInventory(
+      testPool,
+      PRODUCT.id,
+      INVENTORY.total_stock,
+      INVENTORY.reserved_stock
+    );
   });
 
   it('should commit transaction when order succeeds', async () => {
-
-    const result = await usecase.execute(PRODUCT_ID, QUANTITY, PRODUCT_PRICE);
+    const result = await usecase.execute({
+      userId: USER.id,
+      items: [
+        {
+          productId: PRODUCT.id,
+          quantity: QUANTITY,
+          price: 100,
+          totalAmount: 1000,
+        },
+      ],
+    });
 
     expect(result.id).toBeDefined();
 
@@ -30,7 +44,7 @@ describe('Order Transaction', () => {
     // verify stock reduced
     const { rows: inventory } = await testPool.query(
       'SELECT total_stock, reserved_stock FROM inventory WHERE product_id = $1',
-      [PRODUCT_ID],
+      [PRODUCT.id],
     );
 
     const available = inventory[0].total_stock - inventory[0].reserved_stock;
@@ -40,7 +54,17 @@ describe('Order Transaction', () => {
 
   it('should rollback if stock is insufficient', async () => {
     await expect(
-      usecase.execute('non-existing-product', 999, 100),
+      usecase.execute({
+        userId: USER.id,
+        items: [
+          {
+            productId: 'non-existing-product',
+            quantity: 999,
+            price: 100,
+            totalAmount: 99900,
+          },
+        ],
+      }),
     ).rejects.toThrow();
 
     // verify NO order created
@@ -51,7 +75,7 @@ describe('Order Transaction', () => {
     // verify stock unchanged
     const { rows: inventory } = await testPool.query(
       'SELECT total_stock, reserved_stock FROM inventory WHERE product_id = $1',
-      [PRODUCT_ID],
+      [PRODUCT.id],
     );
 
     expect(inventory[0].total_stock).toBe(10);

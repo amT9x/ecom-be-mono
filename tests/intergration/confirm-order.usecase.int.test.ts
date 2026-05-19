@@ -1,7 +1,7 @@
 import { describe, beforeEach, it, expect, beforeAll } from "vitest"
 import { testPool, resetDatabase } from "../setup/test_db"
 import { ConfirmOrderUseCase } from "../../src/modules/orders/confirm-order.usecase"
-import { ORDER_ID, ORDER_STATUS, TOTAL_AMOUNT_ORDER } from "../setup/constanst";
+import { ORDER } from "../setup/constanst";
 
 async function seedOrder() {
   await testPool.query(
@@ -9,7 +9,7 @@ async function seedOrder() {
     INSERT INTO orders(id, status, total_amount)
     VALUES ($1, $2, $3)
   `,
-    [ORDER_ID, ORDER_STATUS.PENDING, TOTAL_AMOUNT_ORDER],
+    [ORDER.id, ORDER.status.PENDING, ORDER.total_amount],
   );
 }
 
@@ -22,15 +22,14 @@ describe('ConfirmOrderUseCase test-int', () => {
   it('should confirm pending order', async () => {
     const usecase = new ConfirmOrderUseCase(testPool);
 
-    const result = await usecase.execute(ORDER_ID);
+    const result = await usecase.execute(ORDER.id);
 
-    expect(result.status).toBe(ORDER_STATUS.CONFIRMED);
+    expect(result.status).toBe(ORDER.status.CONFIRMED);
 
     const res = await testPool.query(
-      `SELECT status FROM orders WHERE id=$1`, [ORDER_ID],
-    );
+      `SELECT status FROM orders WHERE id=$1`, [ORDER.id]);
 
-    expect(res.rows[0].status).toBe(ORDER_STATUS.CONFIRMED);
+    expect(res.rows[0].status).toBe(ORDER.status.CONFIRMED);
   });
 
   it('should reject confirm when order already confirmed', () => {
