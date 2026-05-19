@@ -9,15 +9,26 @@ export interface CreateOrderInput {
     productId: string;
     quantity: number;
     price: number;
+    totalAmount: number;
   }[];
 }
+
+type CreateOrderOutput = {
+  id: string;
+  totalAmount: number;
+  items: {
+    productId: string;
+    quantity: number;
+    price: number;
+  }[];
+};
 
 export class CreateOrderUseCase {
   constructor(
     private pool: Pool,
   ) {}
 
-  async execute(input: CreateOrderInput) {
+  async execute(input: CreateOrderInput): Promise<CreateOrderOutput> {
     const client = await this.pool.connect();
 
     try {
@@ -36,7 +47,12 @@ export class CreateOrderUseCase {
         }))
       );
 
-      const order = await orderRepo.create(0);
+      const totalAmount = input.items.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0,
+      );
+
+      const order = await orderRepo.create(totalAmount);
 
       await orderRepo.addItem(
         order.id,
@@ -44,12 +60,17 @@ export class CreateOrderUseCase {
           productId: item.productId,
           quantity: item.quantity,
           price: item.price,
+          totalAmount: item.totalAmount,
         }))
       );
 
       await client.query('COMMIT');
 
-      return order;
+    return {
+      id: order.id,
+      totalAmount,
+      items: input.items,
+    };
     } catch (e) {
       await client.query('ROLLBACK');
       throw e;
