@@ -26,3 +26,7 @@ export const USER = {
   username: 'admin',
   password: 'admin',
 }
+
+export const PAYMENT = {
+  id: '44444444-4444-4444-4444-444444444444',
+}

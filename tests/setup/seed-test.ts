@@ -17,3 +17,13 @@ export async function seedInventory (pool: Pool, PRODUCT_ID: string, total_stock
     [PRODUCT_ID, total_stock, reserved_stock],
   )
 }
+
+export async function seedOrder (pool: Pool, ORDER_ID: string, ORDER_STATUS: string, ORDER_TOTAL_AMOUNT: number) {
+  await pool.query(
+    `
+      INSERT INTO orders (id, status, total_amount)
+      VALUES ($1, $2, $3)
+    `,
+    [ORDER_ID, ORDER_STATUS, ORDER_TOTAL_AMOUNT],
+  )
+}
