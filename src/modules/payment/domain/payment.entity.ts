@@ -10,6 +10,7 @@ export interface IPayment {
   orderId: string;
   amount: number;
   status: PaymentStatus;
+  provider: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -39,6 +40,10 @@ export class Payment {
 
   get status(): PaymentStatus {
     return this.props.status;
+  }
+
+  get provider(): string {
+    return this.props.provider;
   }
 
   get createdAt(): Date {
