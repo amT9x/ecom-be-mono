@@ -14,7 +14,7 @@ describe('InventoryService', () => {
 
     const service = new InventoryService(repo as any);
 
-    await service.reserveStock('p1', 3);
+    await service.reserveStock([{ productId: 'p1', quantity: 3 }]);
 
     expect(repo.reserveStock).toHaveBeenCalledWith('p1', 3);
   });
@@ -31,6 +31,6 @@ describe('InventoryService', () => {
 
     const service = new InventoryService(repo as any);
 
-    await expect(service.reserveStock('p1', 1)).rejects.toThrow();
+    await expect(service.reserveStock([{ productId: 'p1', quantity: 3 }])).rejects.toThrow();
   });
 });
