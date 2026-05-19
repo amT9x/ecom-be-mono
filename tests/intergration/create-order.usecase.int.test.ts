@@ -26,6 +26,7 @@ describe('Order Transaction', () => {
           productId: PRODUCT.id,
           quantity: QUANTITY,
           price: 100,
+          totalAmount: 1000,
         },
       ],
     });
@@ -60,6 +61,7 @@ describe('Order Transaction', () => {
             productId: 'non-existing-product',
             quantity: 999,
             price: 100,
+            totalAmount: 99900,
           },
         ],
       }),
