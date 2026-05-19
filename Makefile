@@ -107,9 +107,9 @@ db-reset-schema:
 	@./scripts/db/manage.sh reset-schema
 
 db-migrate:
-#	for ecom_mono db
 	@./scripts/db/migrate.sh $(MODE)
-# for testdb db
+
+db-migrate-local:
 	NODE_ENV=test npx tsx scripts/migrate.ts
 
 db-pre-push:
