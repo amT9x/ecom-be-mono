@@ -42,7 +42,7 @@ async function main() {
     await logState('🔎 BEFORE');
 
     console.log('reserve...');
-    await service.reserveStock(productId, 1);
+    await service.reserveStock([{ productId, quantity: 1 }]);
 
     await logState('🔎 AFTER RESERVE (should NOT change)');
 
