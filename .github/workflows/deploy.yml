@@ -33,19 +33,19 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/ecommerce-api:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/ecommerce-api:${{ github.sha }}
 
-      # - name: Deploy VPS
-      #   uses: appleboy/ssh-action@v1.0.3
-      #   with:
-      #     host: ${{ secrets.VPS_HOST }}
-      #     username: ${{ secrets.VPS_USER }}
-      #     key: ${{ secrets.VPS_SSH_KEY }}
-      #     script: |
-      #       docker pull ${{ secrets.DOCKER_USERNAME }}/ecommerce-api:${{ github.sha }}
+      - name: Deploy VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            docker pull ${{ secrets.DOCKER_USERNAME }}/ecommerce-api:${{ github.sha }}
 
-      #       docker stop ecommerce-api || true
-      #       docker rm ecommerce-api || true
+            docker stop ecommerce-api || true
+            docker rm ecommerce-api || true
 
-      #       docker run -d \
-      #         --name ecommerce-api \
-      #         -p 3000:3000 \
-      #         ${{ secrets.DOCKER_USERNAME }}/ecommerce-api:${{ github.sha }}
+            docker run -d \
+              --name ecommerce-api \
+              -p 3000:3000 \
+              ${{ secrets.DOCKER_USERNAME }}/ecommerce-api:${{ github.sha }}
