@@ -20,7 +20,7 @@ export function buildApp() {
   app.register(productRoutes);
 
   app.get('/', async () => {
-    return { app: 'ecom_tunghv' };
+    return { app: 'ecom' };
   });
 
   app.get('/health', async (req) => {
