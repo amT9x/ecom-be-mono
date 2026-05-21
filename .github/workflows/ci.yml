@@ -1,16 +1,20 @@
-name: CI
+name: PR Validation
 
 on:
-  push:
-    branches-ignore:
+  pull_request:
+    branches:
       - main
+  workflow_dispatch:
 
 jobs:
-  ci:
+  validate-pr:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      # --------------------------------
+      # Setup
+      # --------------------------------
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Node.js
@@ -19,14 +23,8 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Install deps
-        run: npm ci
-
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Unit tests
-        run: npm run test:unit
+      # --------------------------------
+      # CI
+      # --------------------------------
+      - name: CI
+        run: make ci
