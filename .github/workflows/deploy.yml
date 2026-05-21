@@ -23,7 +23,7 @@ jobs:
         run: |
           docker build \
             -f docker/Dockerfile \
-            -- target production \
+            --target production \
             -t ${{ secrets.DOCKER_USERNAME }}/ecommerce-api:latest \
             -t ${{ secrets.DOCKER_USERNAME }}/ecommerce-api:${{ github.sha }} \
             .
