@@ -118,7 +118,7 @@ db-pre-push:
 db-reset:
 	$(MAKE) db-drop-db
 	$(MAKE) db-create-db
-	$(MAKE) db-migrate MODE=dev
+	$(MAKE) db-migrate-local
 	$(MAKE) db-seed
 
 db-fresh-data: db-reset-data db-seed
