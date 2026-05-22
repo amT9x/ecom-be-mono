@@ -1,49 +1,65 @@
-import * as service from './product.service.js';
-import { FastifyRequest, FastifyReply } from 'fastify';
-import { requestContext } from '../../infrastructure/context/request-context.js';
+import { FastifyReply, FastifyRequest } from 'fastify';
 
 type GetProductParams = {
   id: string;
 };
 
-export async function createProductController(
-  req: FastifyRequest,
-  reply: FastifyReply,
-) {
-  const product = await service.createProductService(req.body);
-  return reply.send(product);
-}
+export class ProductController {
+  constructor(
+    private readonly createProductUsecase: any,
+    private readonly getProductUsecase: any,
+    private readonly listProductsUsecase: any,
+    private readonly updateProductUsecase: any,
+    private readonly deleteProductUsecase: any,
+  ) {}
 
-export async function getProductsController(
-  req: FastifyRequest,
-  reply: FastifyReply,
-) {
-  requestContext.set('handler', 'getProductsController');
-  const products = await service.getProductsService(req.query);
-  return reply.send(products);
-}
+  create = async (req: FastifyRequest, reply: FastifyReply) => {
+    const result = await this.createProductUsecase.execute(req.body);
 
-export async function getProductController(
-  req: FastifyRequest<{ Params: GetProductParams }>,
-  reply: FastifyReply,
-) {
-  const product = await service.getProductService(req.params.id);
-  return reply.send(product);
-}
+    return reply.send(result);
+  };
 
-export async function updateProductController(
-  req: FastifyRequest<{ Params: GetProductParams }>,
-  reply: FastifyReply,
-) {
-  const product = await service.updateProductService(req.params.id, req.body);
+  findAll = async (req: FastifyRequest, reply: FastifyReply) => {
+    const result = await this.listProductsUsecase.execute(req.query);
 
-  return reply.send(product);
-}
+    return reply.send(result);
+  };
 
-export async function deleteProductController(
-  req: FastifyRequest<{ Params: GetProductParams }>,
-  reply: FastifyReply,
-) {
-  await service.deleteProductService(req.params.id);
-  return reply.send({ success: true });
+  findOne = async (
+    req: FastifyRequest<{
+      Params: GetProductParams;
+    }>,
+    reply: FastifyReply,
+  ) => {
+    const result = await this.getProductUsecase.execute(req.params.id);
+
+    return reply.send(result);
+  };
+
+  update = async (
+    req: FastifyRequest<{
+      Params: GetProductParams;
+    }>,
+    reply: FastifyReply,
+  ) => {
+    const result = await this.updateProductUsecase.execute(
+      req.params.id,
+      req.body,
+    );
+
+    return reply.send(result);
+  };
+
+  delete = async (
+    req: FastifyRequest<{
+      Params: GetProductParams;
+    }>,
+    reply: FastifyReply,
+  ) => {
+    await this.deleteProductUsecase.execute(req.params.id);
+
+    return reply.send({
+      success: true,
+    });
+  };
 }

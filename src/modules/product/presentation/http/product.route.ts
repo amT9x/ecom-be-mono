@@ -1,19 +1,19 @@
 import { FastifyInstance } from 'fastify';
-import * as controller from './product.controller.js';
 import { createProductSchema } from './product.schema.js';
 
-export async function productRoutes(app: FastifyInstance, pool: any) {
+export async function productRoutes(app: FastifyInstance, options: any) {
+  const controller = options.controller;
+
   app.post(
     '/products',
-    { schema: createProductSchema },
-    controller.createProductController,
-  );
+    {schema: createProductSchema},
+    controller.create);
 
-  app.get('/products', controller.getProductsController);
+  app.get('/products', controller.findAll);
 
-  app.get('/products/:id', controller.getProductController);
+  app.get('/products/:id', controller.findOne);
 
-  app.put('/products/:id', controller.updateProductController);
+  app.put('/products/:id', controller.update);
 
-  app.delete('/products/:id', controller.deleteProductController);
+  app.delete('/products/:id', controller.delete);
 }
