@@ -2,16 +2,6 @@
 # CONFIG
 # ===============================
 MAKEFLAGS += --no-print-directory
-ifneq (,$(wildcard .env))
-include .env
-export
-endif
-
-create-env-file:
-	@echo "==> Creating .env file"
-	@test -f .env || (cp .env.example .env && echo "Created .env")
-	@echo "✅ Creating .env file...done"
-
 COMPOSE=docker compose -f docker/docker-compose.yml
 
 # ==================================================
@@ -135,11 +125,12 @@ clean-node:
 # WORKFLOW
 # ==================================================
 bootstrap:
-	@$(MAKE) create-env-file
+	@./scripts/enviroments/create_env_file.sh
 	@$(MAKE) db-bootstrap
 	@npm install
 	@$(MAKE) dk-build
 	@$(MAKE) dk-up
+	@echo "✅ Bootstrap complete"
 
 up:
 	@$(MAKE) dk-up
