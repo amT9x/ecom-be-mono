@@ -93,6 +93,44 @@ run_app() {
   echo "✅ App running"
 }
 
+app_health_check() {
+    echo "==> App Health check (CI)..."
+
+    for i in $(seq 1 30); do
+        STATUS=$(docker inspect --format='{{.State.Health.Status}}' app-test 2>/dev/null || echo "starting")
+
+        if [ "$STATUS" = "healthy" ]; then
+            echo "✅ CI health check passed"
+            exit 0
+        fi
+
+        echo "Status: $STATUS"
+        sleep 2
+    done
+
+    echo "❌ App not healthy"
+    docker logs app-test
+    exit 1
+}
+
+app_ready() {
+    echo "==> Waiting app ready..."
+
+    for i in $(seq 1 30); do
+        if curl -sf http://localhost:3000/ready >/dev/null; then
+            echo "✅ App ready"
+            exit 0
+        fi
+
+        echo "App not ready yet..."
+        sleep 2
+    done
+
+    echo "❌ App never became ready"
+    docker logs app-test
+    exit 1
+}
+
 run_test_int() {
   echo "==> Run test-int..."
 
@@ -158,6 +196,8 @@ case "$ACTION" in
   network) create_network ;;
   postgres) run_postgres ;;
   app) run_app ;;
+  app-health-check) app_health_check ;;
+  app-ready) app_ready ;;
   test-int) run_test_int ;;
   debug) debug_app ;;
   clean-containers) clean_containers ;;

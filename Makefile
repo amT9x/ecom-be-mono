@@ -115,14 +115,6 @@ app-build:
 app-start:
 	npm run start
 
-.PHONY: app-health-check
-app-health-check:
-	@./scripts/app/health_check.sh $(MODE)
-
-.PHONY: app-wait-ready
-app-wait-ready:
-	@./scripts/app/wait_ready.sh $(MODE)
-
 # ==================================================
 # CI
 # ==================================================
@@ -140,6 +132,12 @@ run-postgres-ci:
 
 run-app-ci:
 	@./scripts/ci/pipeline.sh app
+
+app-health-check:
+	@./scripts/ci/pipeline.sh app-health-check
+
+app-ready:
+	@./scripts/ci/pipeline.sh app-ready
 
 run-test-int-ci:
 	@./scripts/ci/pipeline.sh test-int
