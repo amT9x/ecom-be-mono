@@ -1,34 +1,64 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-make doctor MODE=ci
-make app-install-ci
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PIPELINE="$SCRIPT_DIR/pipeline.sh"
+WAIT_DB="$(cd "$SCRIPT_DIR/../db" && pwd)/wait_db.sh"
+MIGRATE="$(cd "$SCRIPT_DIR/../db" && pwd)/migrate.sh"
 
-make pre-commit
-make app-audit-high
-make app-audit-critical
+cleanup() {
+  status=$?
 
-make app-build
+  echo ""
+  echo "==> Cleanup..."
 
-make dk-create-network-ci
+  "$PIPELINE" clean-containers || true
+  "$PIPELINE" clean-network || true
 
-make dk-run-postgres-ci
-make wait-db MODE=ci DB_CONTAINER=postgres
+  if [ "$status" -eq 0 ]; then
+    echo ""
+    echo "✅ CI PASSED"
+    echo ""
+  fi
+}
+trap cleanup EXIT
 
-make dk-build-app-ci
-make dk-build-test-int-ci
-make dk-run-app-ci
+validate_stage() {
+  "$PIPELINE" validate
+}
 
-make app-health-check MODE=ci
+infra_stage() {
+  "$PIPELINE" network
+  "$PIPELINE" postgres
+  "$WAIT_DB" wait-db
+}
 
-make dk-debug-app-ci
+application_stage() {
+  "$PIPELINE" build
+  "$PIPELINE" build-test-int
+  "$PIPELINE" app
+  "$PIPELINE" app-health-check
+}
 
-make db-migrate MODE=ci
+database_stage() {
+  "$MIGRATE" ci
+}
 
-# make app-wait-ready-ci
+test_stage() {
+  "$PIPELINE" debug
+  "$PIPELINE" test-int
+}
 
-make dk-run-test-int-ci
+main() {
+  echo ""
+  echo "==> CI START"
+  echo ""
 
-make dk-clean-ci
+  validate_stage
+  infra_stage
+  application_stage
+  database_stage
+  test_stage
+}
 
-echo "✅ CI PASSED"
+main "$@"

@@ -1,21 +1,17 @@
-######################## PRODUCT #############################
+### Constants
 @page=3
 @cursor = eyJjcmVhdGVkX2F0IjoiMjAyNi0wNC0xN1QwNzo1NzoyOC41MDFaIiwiaWQiOiJhMjE0ZTZmZi03ZGFmLTQ3ZWItOWM4OC00Y2FiMzNmOGI4YTkifQ==
-@id =
+@id =11111111-1111-1111-1111-111111111111
+
+###############################################################
+
+### MAIN API
 
 ### GET
 GET {{baseUrl}}/products
 
-### Get a product
+### Get PRODUCT ID
 GET {{baseUrl}}/products/{{id}}
-
-### default pagination
-GET {{baseUrl}}/products
-?page={{page}}
-
-### pagination use cursor
-GET {{baseUrl}}/products
-?cursor={{cursor}}
 
 ### POST
 POST {{baseUrl}}/products
@@ -40,9 +36,24 @@ Content-Type: application/json
 ### DELETE
 DELETE {{baseUrl}}/products/{{id}}
 
-### TEST -------------------------------
-### Limit fail
+###############################################################
+
+### BONUS
+
+### DEFAULT PAGINATION
+GET {{baseUrl}}/products
+?page={{page}}
+
+### CURSOR PARINATION
+GET {{baseUrl}}/products
+?cursor={{cursor}}
+
+###############################################################
+
+### TEST
+
+### LIMIT FAIL
 GET {{baseUrl}}/products?limit=abc
 
-### Limit true
+### LIMIT SUCCESS
 GET {{baseUrl}}/products?limit=10
