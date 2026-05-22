@@ -1,5 +1,5 @@
 import { InventoryRepository } from './inventory.repository.js';
-import { NotFoundError } from '../../shared/errors/http-error.js';
+import { NotFoundError } from '../../../shared/errors/http-error.js';
 
 export class InventoryService {
   constructor(private repo: InventoryRepository) {}

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { InventoryService } from '../../src/modules/inventory/inventory.service.js';
+import { InventoryService } from '../../src/modules/inventory/domain/inventory.service.js';
 
 describe('InventoryService', () => {
   it('should reserve stock when enough available', async () => {

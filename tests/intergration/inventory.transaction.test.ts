@@ -1,8 +1,7 @@
 import { describe, beforeEach, it, expect } from 'vitest';
 import { testPool, resetDatabase } from '../setup/test_db.js';
-import { InventoryRepository } from '../../src/modules/inventory/inventory.repository.js';
-import { PostgestInventoryRepository } from '../../src/modules/inventory/postgres-inventory.repository.js';
-import { InventoryService } from '../../src/modules/inventory/inventory.service';
+import { PostgestInventoryRepository } from '../../src/modules/inventory/infrastructure/postgres-inventory.repository.js';
+import { InventoryService } from '../../src/modules/inventory/domain/inventory.service';
 import { PRODUCT, INVENTORY } from '../setup/constanst.js';
 import { seedProduct,seedInventory } from '../setup/seed-test.js';
 
