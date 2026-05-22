@@ -1,8 +1,8 @@
 import { Pool } from 'pg';
-import { NotFoundError } from '../../shared/errors/http-error.js';
-import { PostgresOrderRepository } from './postgres-order.repository.js';
+import { NotFoundError } from '../../../shared/errors/http-error.js';
+import { PostgresOrderRepository } from '../infrastructure/postgres-order.repository.js';
 
-export class CancelOrderUseCase {
+export class ConfirmOrderUseCase {
   constructor(
     private pool: Pool,
   ) {}
@@ -21,22 +21,17 @@ export class CancelOrderUseCase {
         throw new NotFoundError('Order not found');
       }
 
-      if (
-        order.status !== 'PENDING' &&
-        order.status !== 'CONFIRMED'
-      ) {
-        throw new Error('Order cannot be cancelled');
+      if (order.status !== 'PENDING') {
+        throw new Error('Invalid order status');
       }
 
-      // future:
-      // await inventoryService.release(order.items)
-      // await paymentService.refund(order.paymentId)
+      // const confirmed = this.orderService.confirm(order);
 
-      await orderRepo.updateStatus(orderId, 'CANCELLED');
+      await orderRepo.updateStatus(orderId, 'CONFIRMED');
 
       await client.query('COMMIT');
 
-      return { status: 'CANCELLED' };
+      return {status: 'CONFIRMED'};
     } catch (err) {
       await client.query('ROLLBACK');
       throw err;

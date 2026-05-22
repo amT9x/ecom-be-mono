@@ -1,7 +1,7 @@
 // Infrastructure Order (adapter)
 
-import { OrderRepository } from './order.repository.js';
-import { Order } from './order.entity.js';
+import { OrderRepository } from '../domain/order.repository.js';
+import { Order } from '../domain/order.entity.js';
 import { randomUUID } from 'crypto';
 
 export type DBExecutor = {

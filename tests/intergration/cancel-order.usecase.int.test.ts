@@ -2,7 +2,7 @@ import { describe, beforeEach, it, expect } from 'vitest';
 
 import { testPool, resetDatabase } from '../setup/test_db';
 
-import { CancelOrderUseCase } from '../../src/modules/orders/cancel-order.usecase';
+import { CancelOrderUseCase } from '../../src/modules/orders/application/cancel-order.usecase';
 
 import { ORDER } from '../setup/constanst';
 

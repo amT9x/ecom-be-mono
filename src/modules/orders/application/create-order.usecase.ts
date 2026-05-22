@@ -1,7 +1,7 @@
 import { Pool } from 'pg';
-import { InventoryService } from '../inventory/domain/inventory.service.js';
-import { PostgresOrderRepository } from './postgres-order.repository.js';
-import { PostgestInventoryRepository } from '../inventory/infrastructure/postgres-inventory.repository.js';
+import { InventoryService } from '../../inventory/domain/inventory.service.js';
+import { PostgresOrderRepository } from '../infrastructure/postgres-order.repository.js';
+import { PostgestInventoryRepository } from '../../inventory/infrastructure/postgres-inventory.repository.js';
 
 export interface CreateOrderInput {
   userId: string;

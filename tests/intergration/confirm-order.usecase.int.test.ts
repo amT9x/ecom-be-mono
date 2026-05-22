@@ -1,6 +1,6 @@
 import { describe, beforeEach, it, expect, beforeAll } from "vitest"
 import { testPool, resetDatabase } from "../setup/test_db"
-import { ConfirmOrderUseCase } from "../../src/modules/orders/confirm-order.usecase"
+import { ConfirmOrderUseCase } from "../../src/modules/orders/application/confirm-order.usecase"
 import { ORDER } from "../setup/constanst";
 
 async function seedOrder() {
