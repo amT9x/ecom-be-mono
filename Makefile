@@ -6,7 +6,7 @@ include .env
 export
 endif
 
-config-env:
+create-env-file:
 	@test -f .env || (cp .env.example .env && echo "Created .env")
 
 COMPOSE=docker compose -f docker/docker-compose.yml
@@ -131,7 +131,8 @@ clean-node:
 # ==================================================
 # WORKFLOW
 # ==================================================
-bootstrap: config-env
+bootstrap:
+	@$(MAKE) create-env-file
 	@$(MAKE) db-bootstrap
 	npm install
 	@$(MAKE) dk-build-up
