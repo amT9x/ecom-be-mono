@@ -32,34 +32,34 @@ dk-logs:
 	$(COMPOSE) logs -f
 
 dk-build-app-ci:
-	@./scripts/docker/ci_pipeline.sh build
+	@./scripts/ci/pipeline.sh build
 
 dk-build-test-int-ci:
-	@./scripts/docker/ci_pipeline.sh build-test-int
+	@./scripts/ci/pipeline.sh build-test-int
 
 dk-create-network-ci:
-	@./scripts/docker/ci_pipeline.sh network
+	@./scripts/ci/pipeline.sh network
 
 dk-run-postgres-ci:
-	@./scripts/docker/ci_pipeline.sh postgres
+	@./scripts/ci/pipeline.sh postgres
 
 dk-run-app-ci:
-	@./scripts/docker/ci_pipeline.sh app
+	@./scripts/ci/pipeline.sh app
 
 dk-run-test-int-ci:
-	@./scripts/docker/ci_pipeline.sh test-int
+	@./scripts/ci/pipeline.sh test-int
 
 dk-debug-app-ci:
-	@./scripts/docker/ci_pipeline.sh debug
+	@./scripts/ci/pipeline.sh debug
 
 dk-clean-ci:
-	@./scripts/docker/ci_pipeline.sh clean
+	@./scripts/ci/pipeline.sh clean
 
 dk-clean-act:
-	@./scripts/docker/ci_pipeline.sh clean-act
+	@./scripts/ci/pipeline.sh clean-act
 
 dk-ci-pipeline:
-	@./scripts/docker/ci_pipeline.sh pipeline
+	@./scripts/ci/pipeline.sh pipeline
 
 # ==================================================
 # DATABASE

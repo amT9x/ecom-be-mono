@@ -162,12 +162,12 @@ case "$ACTION" in
   pipeline) pipeline ;;
   *)
     echo "Usage:"
-    echo "  ci_pipeline.sh build"
-    echo "  ci_pipeline.sh network"
-    echo "  ci_pipeline.sh postgres"
-    echo "  ci_pipeline.sh app"
-    echo "  ci_pipeline.sh debug"
-    echo "  ci_pipeline.sh clean"
-    echo "  ci_pipeline.sh pipeline"
+    echo "  pipeline.sh build"
+    echo "  pipeline.sh network"
+    echo "  pipeline.sh postgres"
+    echo "  pipeline.sh app"
+    echo "  pipeline.sh debug"
+    echo "  pipeline.sh clean"
+    echo "  pipeline.sh pipeline"
     ;;
 esac
