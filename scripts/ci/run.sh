@@ -4,7 +4,8 @@ set -euo pipefail
 make doctor MODE=ci
 make app-install-ci
 
-make pre-commit
+make lint
+make typecheck
 make app-audit-high
 make app-audit-critical
 
