@@ -10,25 +10,27 @@ make app-audit-critical
 
 make app-build
 
-make dk-create-network-ci
+make create-network-ci
 
-make dk-run-postgres-ci
+make run-postgres-ci
 make wait-db MODE=ci DB_CONTAINER=postgres
 
-make dk-build-app-ci
-make dk-build-test-int-ci
-make dk-run-app-ci
+make build-app-ci
+make build-test-int-ci
+make run-app-ci
 
 make app-health-check MODE=ci
 
-make dk-debug-app-ci
+make debug-app-ci
 
 make db-migrate MODE=ci
 
 # make app-wait-ready-ci
 
-make dk-run-test-int-ci
+make run-test-int-ci
 
-make dk-clean-ci
+make clean-containers
+
+make clean-network
 
 echo "✅ CI PASSED"

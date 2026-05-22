@@ -117,22 +117,25 @@ debug_app() {
 }
 
 # =========================
-# CLEAN CI
+# CLEAN
 # =========================
-clean_ci() {
-  echo "==> Clean CI containers..."
+clean_containers() {
+  echo "==> Clean containers..."
   docker rm -f "$APP_CONTAINER" "$DB_CONTAINER" 2>/dev/null || true
-  docker network rm "$NETWORK" 2>/dev/null || true
-  echo "✅ Clean done"
+  echo "✅ Clean containers done..."
 }
 
-# =========================
-# CLEAN ACT
-# =========================
-clean_act() {
-  echo "==> Cleaning act containers..."
+clean_network() {
+  echo "==> Clean network..."
+  docker network rm "$NETWORK" 2>/dev/null || true
+  echo "✅ Clean network done..."
+}
+clean_ci() {
+  echo "==> Clean ci"
+  docker rm -f "$APP_CONTAINER" "$DB_CONTAINER" 2>/dev/null || true
+  docker network rm "$NETWORK" 2>/dev/null || true
   docker rm -f $(docker ps -aq --filter "name=act-") 2>/dev/null || true
-  echo "✅ Act clean done"
+  echo "✅ Clean ci done..."
 }
 
 # =========================
@@ -157,8 +160,9 @@ case "$ACTION" in
   app) run_app ;;
   test-int) run_test_int ;;
   debug) debug_app ;;
-  clean) clean_ci ;;
-  clean-act) clean_act ;;
+  clean-containers) clean_containers ;;
+  clean-network) clean_network ;;
+  clean-ci) clean_ci ;;
   pipeline) pipeline ;;
   *)
     echo "Usage:"

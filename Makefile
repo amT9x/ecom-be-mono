@@ -11,11 +11,6 @@ config-env:
 
 COMPOSE=docker compose -f docker/docker-compose.yml
 
-create-env-test:
-	@echo "==> Create env file..."
-	cp .env.test .env
-	@echo "✅ Create env file... done"
-
 # ==================================================
 # DOCKER
 # ==================================================
@@ -27,39 +22,6 @@ dk-up:
 
 dk-down:
 	$(COMPOSE) down
-
-dk-logs:
-	$(COMPOSE) logs -f
-
-dk-build-app-ci:
-	@./scripts/ci/pipeline.sh build
-
-dk-build-test-int-ci:
-	@./scripts/ci/pipeline.sh build-test-int
-
-dk-create-network-ci:
-	@./scripts/ci/pipeline.sh network
-
-dk-run-postgres-ci:
-	@./scripts/ci/pipeline.sh postgres
-
-dk-run-app-ci:
-	@./scripts/ci/pipeline.sh app
-
-dk-run-test-int-ci:
-	@./scripts/ci/pipeline.sh test-int
-
-dk-debug-app-ci:
-	@./scripts/ci/pipeline.sh debug
-
-dk-clean-ci:
-	@./scripts/ci/pipeline.sh clean
-
-dk-clean-act:
-	@./scripts/ci/pipeline.sh clean-act
-
-dk-ci-pipeline:
-	@./scripts/ci/pipeline.sh pipeline
 
 # ==================================================
 # DATABASE
@@ -162,6 +124,42 @@ app-wait-ready:
 	@./scripts/app/wait_ready.sh $(MODE)
 
 # ==================================================
+# CI
+# ==================================================
+build-app-ci:
+	@./scripts/ci/pipeline.sh build
+
+build-test-int-ci:
+	@./scripts/ci/pipeline.sh build-test-int
+
+create-network-ci:
+	@./scripts/ci/pipeline.sh network
+
+run-postgres-ci:
+	@./scripts/ci/pipeline.sh postgres
+
+run-app-ci:
+	@./scripts/ci/pipeline.sh app
+
+run-test-int-ci:
+	@./scripts/ci/pipeline.sh test-int
+
+debug-app-ci:
+	@./scripts/ci/pipeline.sh debug
+
+pipeline-ci:
+	@./scripts/ci/pipeline.sh pipeline
+
+clean-containers:
+	@./scripts/ci/pipeline.sh clean-containers
+
+clean-network:
+	@./scripts/ci/pipeline.sh clean-network
+
+clean-ci:
+	@./scripts/ci/pipeline.sh clean-ci
+
+# ==================================================
 # TESTING
 # ==================================================
 test:
@@ -175,12 +173,6 @@ test-int:
 
 test-watch:
 	npm run test:watch
-
-# ==================================================
-# DOMAIN
-# ==================================================
-domain-inventory:
-	npx tsx scripts/domain/inventory.domain.ts
 
 # ==================================================
 # QUALITY
@@ -243,11 +235,6 @@ act:
 clean-node:
 	rm -rf node_modules dist coverage .cache
 
-reset-node: clean app-install-npm
-
-wait-10s:
-	sleep 10
-
 # ==================================================
 # WORKFLOW
 # ==================================================
@@ -260,8 +247,6 @@ down: dk-down
 dev: app-run
 ci:
 	@./scripts/ci/run.sh
-deploy:
-	@./scripts/ci/deploy.sh
 
 # ===============================
 # HELP
