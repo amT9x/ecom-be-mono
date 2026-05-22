@@ -18,13 +18,13 @@ COMPOSE=docker compose -f docker/docker-compose.yml
 # DOCKER
 # ==================================================
 dk-build:
-	$(COMPOSE) build
+	@$(COMPOSE) build
 
 dk-up:
-	$(COMPOSE) up -d
+	@$(COMPOSE) up -d
 
 dk-down:
-	$(COMPOSE) down
+	@$(COMPOSE) down
 
 # ==================================================
 # DATABASE
@@ -58,17 +58,17 @@ db-migrate:
 	@env -u DB_URL NODE_ENV=$(NODE_ENV) ./scripts/db/migrate.sh $(ACTION)
 
 db-reset:
-	$(MAKE) db-drop-db
-	$(MAKE) db-create-db
-	$(MAKE) db-migrate
-	$(MAKE) db-seed
+	@$(MAKE) db-drop-db
+	@$(MAKE) db-create-db
+	@$(MAKE) db-migrate
+	@$(MAKE) db-seed
 
 db-fresh-data:
 	@./scripts/db/manage.sh reset-data
-	$(MAKE) db-seed
+	@$(MAKE) db-seed
 
 db-bootstrap:
-	$(MAKE) db-create-db
+	@$(MAKE) db-create-db
 	@./scripts/db/extensions.sh
 	@./scripts/db/migrate.sh ACTION=boot
 # 	$(MAKE) db-seed
@@ -98,15 +98,15 @@ git-new-branch:
 .PHONY: pre-commit
 pre-commit:
 	@echo "==> Precommit..."
-	npm run lint
-	npm run typecheck
+	@npm run lint
+	@npm run typecheck
 	@echo "✅ Precommit...done"
 
 .PHONY: pre-commit-fix
 pre-commit-fix:
 	@echo "==> Commit..."
-	npm run format
-	npm run lint -- --fix
+	@npm run format
+	@npm run lint -- --fix
 	@echo "✅ Commit...done"
 
 .PHONY: pre-push
@@ -123,13 +123,13 @@ doctor:
 	@./scripts/enviroments/doctor.sh $(MODE)
 
 act:
-	act pull-request -j validate-pr --rebuild
+	@act pull-request -j validate-pr --rebuild
 
 clean-ci:
 	@./scripts/ci/pipeline.sh clean-ci
 
 clean-node:
-	rm -rf node_modules dist coverage .cache
+	@rm -rf node_modules dist coverage .cache
 
 # ==================================================
 # WORKFLOW
@@ -137,7 +137,7 @@ clean-node:
 bootstrap:
 	@$(MAKE) create-env-file
 	@$(MAKE) db-bootstrap
-	npm install
+	@npm install
 	@$(MAKE) dk-build
 	@$(MAKE) dk-up
 
@@ -148,7 +148,7 @@ down:
 	@$(MAKE) dk-down
 
 dev:
-	npm run dev
+	@npm run dev
 
 ci:
 	@./scripts/ci/run.sh
@@ -169,15 +169,10 @@ help:
 	@echo "  make db-seed"
 	@echo "  make db-reset"
 	@echo ""
-	@echo "🧪 QUALITY"
-	@echo "  make test"
-	@echo "  make lint"
-	@echo "  make typecheck"
-	@echo "  make fix"
-	@echo ""
 	@echo "🌿 GIT"
+	@echo "  make pre-commit"
+	@echo "  make pre-push"
 	@echo "  make git-daily"
 	@echo "  make git-sync"
 	@echo "  make git-new-branch"
-	@echo "  make pre-push"
 	@echo ""
