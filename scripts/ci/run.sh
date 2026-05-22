@@ -1,37 +1,44 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-make doctor MODE=ci
-make app-install-ci
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PIPELINE="$SCRIPT_DIR/pipeline.sh"
+WAIT_DB="$(cd "$SCRIPT_DIR/../db" && pwd)/wait_db.sh"
+MIGRATE="$(cd "$SCRIPT_DIR/../db" && pwd)/migrate.sh"
 
-make lint
-make typecheck
-make app-audit-high
-make app-audit-critical
+cleanup() {
+  status=$?
 
-make app-build
+  echo ""
+  echo "==> Cleanup..."
 
-make create-network-ci
+  "$PIPELINE" clean-containers || true
+  "$PIPELINE" clean-network || true
 
-make run-postgres-ci
-make wait-db MODE=ci DB_CONTAINER=postgres
+  if [ "$status" -eq 0 ]; then
+    echo ""
+    echo "✅ CI PASSED"
+    echo ""
+  fi
+}
 
-make build-app-ci
-make build-test-int-ci
-make run-app-ci
+trap cleanup EXIT
 
-make app-health-check MODE=ci
+echo ""
+echo "==> CI START"
+echo ""
 
-make debug-app-ci
-
-make db-migrate MODE=ci
-
-# make app-wait-ready-ci
-
-make run-test-int-ci
-
-make clean-containers
-
-make clean-network
-
-echo "✅ CI PASSED"
+##################################################
+# FULL WORKFLOW CI
+##################################################
+"$PIPELINE" validate
+"$PIPELINE" build
+"$PIPELINE" network
+"$PIPELINE" postgres
+"$WAIT_DB" wait-db
+"$PIPELINE" build-test-int
+"$PIPELINE" app
+"$PIPELINE" app-health-check
+"$MIGRATE" ci
+"$PIPELINE" debug
+"$PIPELINE" test-int

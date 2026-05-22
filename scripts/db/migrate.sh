@@ -1,29 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MODE="${1:-dev}"
+ACTION="${1:-help}"
 
-# =========================
-# Load ENV
-# =========================
-if [ "$MODE" != "ci" ]; then
-  set -a
-  source .env
-  set +a
-fi
-
-echo "==> Running migrations (MODE=$MODE)..."
-
-run_dev() {
+migrate_dev() {
   npx tsx scripts/db/migrate.ts
 }
 
-run_boot() {
-  MIGRATIONS=db/migration/*.sql
+migrate_boot() {
   DB_CONTAINER=infra-wsl2-postgres-1
 
   DB_USER="${DB_USER:-$(echo "$DB_URL" | sed -E 's|postgresql://([^:]+):.*|\1|')}"
   DB_NAME="${DB_NAME:-$(echo "$DB_URL" | sed -E 's|.*/([^/?]+).*|\1|')}"
+  echo "DB_USER: $DB_USER"
+  echo "DB_NAME: $DB_NAME"
 
   PSQL="docker exec -i $DB_CONTAINER psql \
     -U $DB_USER \
@@ -36,7 +26,7 @@ run_boot() {
   done
 }
 
-run_ci() {
+migrate_ci() {
   docker run --rm \
     --network ci-network \
     -e DB_URL=postgresql://test:test@postgres:5432/testdb \
@@ -46,16 +36,16 @@ run_ci() {
     -e APP_NAME=ecom-test \
     app:test \
     node dist/scripts/db/migrate.js
+
+  echo "✅ Finished migrations"
 }
 
-case "$MODE" in
-  boot) run_boot ;;
-  dev) run_dev ;;
-  ci) run_ci ;;
+case "$ACTION" in
+  boot) migrate_boot ;;
+  dev) migrate_dev ;;
+  ci) migrate_ci ;;
   *)
-    echo "Unknown MODE=$MODE"
-    exit 1
+    echo "Usage:"
+    echo "  migrate.sh [boot|dev|ci]"
     ;;
 esac
-
-echo "✅ Finished migrations"

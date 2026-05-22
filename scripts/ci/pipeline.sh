@@ -8,6 +8,15 @@ APP_CONTAINER="app-test"
 DB_CONTAINER="postgres"
 IMAGE="app:test"
 
+validate() {
+  make doctor MODE=ci
+  make app-install-ci
+  make lint
+  make typecheck
+  make app-audit-high
+  make app-audit-critical
+}
+
 # =========================
 # BUILD APP
 # =========================
@@ -191,6 +200,7 @@ pipeline() {
 # DISPATCH
 # =========================
 case "$ACTION" in
+  validate) validate ;;
   build) build_app ;;
   build-test-int) build_test_int ;;
   network) create_network ;;

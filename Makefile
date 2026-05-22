@@ -116,48 +116,6 @@ app-start:
 	npm run start
 
 # ==================================================
-# CI
-# ==================================================
-build-app-ci:
-	@./scripts/ci/pipeline.sh build
-
-build-test-int-ci:
-	@./scripts/ci/pipeline.sh build-test-int
-
-create-network-ci:
-	@./scripts/ci/pipeline.sh network
-
-run-postgres-ci:
-	@./scripts/ci/pipeline.sh postgres
-
-run-app-ci:
-	@./scripts/ci/pipeline.sh app
-
-app-health-check:
-	@./scripts/ci/pipeline.sh app-health-check
-
-app-ready:
-	@./scripts/ci/pipeline.sh app-ready
-
-run-test-int-ci:
-	@./scripts/ci/pipeline.sh test-int
-
-debug-app-ci:
-	@./scripts/ci/pipeline.sh debug
-
-pipeline-ci:
-	@./scripts/ci/pipeline.sh pipeline
-
-clean-containers:
-	@./scripts/ci/pipeline.sh clean-containers
-
-clean-network:
-	@./scripts/ci/pipeline.sh clean-network
-
-clean-ci:
-	@./scripts/ci/pipeline.sh clean-ci
-
-# ==================================================
 # TESTING
 # ==================================================
 test:
@@ -229,6 +187,9 @@ doctor:
 
 act:
 	act pull-request -j validate-pr --rebuild
+
+clean-ci:
+	@./scripts/ci/pipeline.sh clean-ci
 
 clean-node:
 	rm -rf node_modules dist coverage .cache
