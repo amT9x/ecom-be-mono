@@ -8,7 +8,9 @@ export
 endif
 
 create-env-file:
+	@echo "==> Creating .env file"
 	@test -f .env || (cp .env.example .env && echo "Created .env")
+	@echo "✅ Creating .env file...done"
 
 COMPOSE=docker compose -f docker/docker-compose.yml
 
