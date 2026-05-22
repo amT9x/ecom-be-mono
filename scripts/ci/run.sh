@@ -21,24 +21,44 @@ cleanup() {
     echo ""
   fi
 }
-
 trap cleanup EXIT
 
-echo ""
-echo "==> CI START"
-echo ""
+validate_stage() {
+  "$PIPELINE" validate
+}
 
-##################################################
-# FULL WORKFLOW CI
-##################################################
-"$PIPELINE" validate
-"$PIPELINE" build
-"$PIPELINE" network
-"$PIPELINE" postgres
-"$WAIT_DB" wait-db
-"$PIPELINE" build-test-int
-"$PIPELINE" app
-"$PIPELINE" app-health-check
-"$MIGRATE" ci
-"$PIPELINE" debug
-"$PIPELINE" test-int
+infra_stage() {
+  "$PIPELINE" network
+  "$PIPELINE" postgres
+  "$WAIT_DB" wait-db
+}
+
+application_stage() {
+  "$PIPELINE" build
+  "$PIPELINE" build-test-int
+  "$PIPELINE" app
+  "$PIPELINE" app-health-check
+}
+
+database_stage() {
+  "$MIGRATE" ci
+}
+
+test_stage() {
+  "$PIPELINE" debug
+  "$PIPELINE" test-int
+}
+
+main() {
+  echo ""
+  echo "==> CI START"
+  echo ""
+
+  validate_stage
+  infra_stage
+  application_stage
+  database_stage
+  test_stage
+}
+
+main "$@"
