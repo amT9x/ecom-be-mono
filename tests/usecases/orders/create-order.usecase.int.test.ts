@@ -1,8 +1,8 @@
 import { describe, it, beforeEach, expect } from 'vitest';
-import { CreateOrderUseCase } from '../../src/modules/orders/application/create-order.usecase';
-import { PRODUCT, USER, QUANTITY, INVENTORY} from '../setup/constanst.ts';
-import { testPool, resetDatabase } from '../setup/test_db.ts';
-import { seedInventory, seedProduct } from '../setup/seed-test.ts';
+import { CreateOrderUseCase } from '../../../src/modules/orders/application/create-order.usecase';
+import { PRODUCT, USER, QUANTITY, INVENTORY} from '../../setup/constanst.ts';
+import { testPool, resetDatabase } from '../../setup/test_db.ts';
+import { seedInventory, seedProduct } from '../../setup/seed-test.ts';
 
 describe('Order Transaction', () => {
   const usecase = new CreateOrderUseCase(testPool);

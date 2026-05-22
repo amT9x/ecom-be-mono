@@ -1,10 +1,10 @@
 import { describe, beforeEach, it, expect } from 'vitest';
 
-import { testPool, resetDatabase } from '../setup/test_db';
+import { testPool, resetDatabase } from '../../setup/test_db';
 
-import { CancelOrderUseCase } from '../../src/modules/orders/application/cancel-order.usecase';
+import { CancelOrderUseCase } from '../../../src/modules/orders/application/cancel-order.usecase';
 
-import { ORDER } from '../setup/constanst';
+import { ORDER } from '../../setup/constanst';
 
 async function seedOrder(status = ORDER.status.PENDING) {
   await testPool.query(

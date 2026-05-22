@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
-import { CreatePaymentUsecase } from '../../src/modules/payment/application/create-payment.usecase.js';
-import { testPool, resetDatabase } from '../setup/test_db.js';
-import { PAYMENT, ORDER, PRODUCT, INVENTORY } from '../setup/constanst.js';
-import { seedProduct, seedInventory, seedOrder } from '../setup/seed-test.js';
+import { CreatePaymentUsecase } from '../../../src/modules/payment/application/create-payment.usecase.js';
+import { testPool, resetDatabase } from '../../setup/test_db.js';
+import { PAYMENT, ORDER, PRODUCT, INVENTORY } from '../../setup/constanst.js';
+import { seedProduct, seedInventory, seedOrder } from '../../setup/seed-test.js';
 
 describe('CreatePaymentUsecase', () => {
   let usecase: CreatePaymentUsecase;

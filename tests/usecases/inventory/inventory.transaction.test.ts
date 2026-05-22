@@ -1,9 +1,9 @@
 import { describe, beforeEach, it, expect } from 'vitest';
-import { testPool, resetDatabase } from '../setup/test_db.js';
-import { PostgestInventoryRepository } from '../../src/modules/inventory/infrastructure/postgres-inventory.repository.js';
-import { InventoryService } from '../../src/modules/inventory/domain/inventory.service';
-import { PRODUCT, INVENTORY } from '../setup/constanst.js';
-import { seedProduct,seedInventory } from '../setup/seed-test.js';
+import { testPool, resetDatabase } from '../../setup/test_db.js';
+import { PostgestInventoryRepository } from '../../../src/modules/inventory/infrastructure/postgres-inventory.repository.js';
+import { InventoryService } from '../../../src/modules/inventory/domain/inventory.service';
+import { PRODUCT, INVENTORY } from '../../setup/constanst.js';
+import { seedProduct,seedInventory } from '../../setup/seed-test.js';
 
 describe('Inventory Transaction', () => {
   beforeEach(async () => {

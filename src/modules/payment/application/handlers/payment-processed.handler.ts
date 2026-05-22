@@ -1,4 +1,4 @@
-import { ConfirmOrderUseCase } from '../../../orders/confirm-order.usecase.js';
+import { ConfirmOrderUseCase } from '../../../orders/application/confirm-order.usecase.js';
 
 export class PaymentProcessedHandler {
   constructor(private confirmOrder: ConfirmOrderUseCase) {}

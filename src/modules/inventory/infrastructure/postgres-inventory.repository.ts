@@ -1,4 +1,4 @@
-import { InventoryRepository, InventoryRow } from '../inventory.repository.js';
+import { InventoryRepository, InventoryRow } from '../domain/inventory.repository.js';
 
 export type DBExecutor = {
   query<T = any>(text: string, params?: any[]): Promise<{ rows: T[] }>;
