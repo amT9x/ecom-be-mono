@@ -135,10 +135,18 @@ bootstrap:
 	@$(MAKE) create-env-file
 	@$(MAKE) db-bootstrap
 	npm install
-	@$(MAKE) dk-build-up
-up: dk-up
-down: dk-down
-dev: npm run dev
+	@$(MAKE) dk-build
+	@$(MAKE) dk-up
+
+up:
+	@$(MAKE) dk-up
+
+down:
+	@$(MAKE) dk-down
+
+dev:
+	npm run dev
+
 ci:
 	@./scripts/ci/run.sh
 
