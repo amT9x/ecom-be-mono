@@ -45,7 +45,7 @@ run_ci() {
     -e NODE_ENV=test \
     -e APP_NAME=ecom-test \
     app:test \
-    node dist/scripts/migrate.js
+    node dist/scripts/db/migrate.js
 }
 
 case "$MODE" in
