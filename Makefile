@@ -1,6 +1,7 @@
 # ===============================
 # CONFIG
 # ===============================
+MAKEFLAGS += --no-print-directory
 ifneq (,$(wildcard .env))
 include .env
 export
