@@ -25,7 +25,7 @@
     "test:watch": "vitest",
     "test:e2e": "vitest run tests/e2e",
     "ci": "npm typecheck && npm lint && npm test",
-    "db:migrate": "tsx scripts/migrate.ts"
+    "db:migrate": "tsx scripts/db/migrate.ts"
   },
   "dependencies": {
     "dotenv": "17.4.2",

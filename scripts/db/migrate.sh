@@ -15,7 +15,7 @@ fi
 echo "==> Running migrations (MODE=$MODE)..."
 
 run_dev() {
-  npx tsx scripts/migrate.ts
+  npx tsx scripts/db/migrate.ts
 }
 
 run_boot() {

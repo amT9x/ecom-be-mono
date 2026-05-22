@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { Client } from 'pg';
-import { env } from '../src/config/env.js';
+import { env } from '../../src/config/env.js';
 
 const client = new Client({
   connectionString: env.DB_URL,

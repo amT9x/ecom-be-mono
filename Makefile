@@ -110,7 +110,7 @@ db-migrate:
 	@./scripts/db/migrate.sh $(MODE)
 
 db-migrate-local:
-	NODE_ENV=test npx tsx scripts/migrate.ts
+	NODE_ENV=test npx tsx scripts/db/migrate.ts
 
 db-pre-push:
 	@./scripts/db/pre_push.sh
