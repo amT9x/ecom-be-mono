@@ -1,10 +1,9 @@
 import Fastify from 'fastify';
 import { initializeDB } from '../config/database.js';
 import { loggerConfig } from '../config/logger.config.js';
-import { requestContextPlugin } from '../plugins/request-context.plugin.js';
-import { loggerPlugin } from '../plugins/request-lifecycle-logger.plugin.js';
-import { errorHandler } from '../plugins/error-handler.plugin.js';
-import { registerProductModule } from '../modules/product/composition/product.module.js';
+import { registerModules } from './registers/register-modules.js';
+import { registerInfrastructure } from './registers/register-infrastructure.js';
+import { registerHealthCheck } from './registers/register-health-check.js';
 
 export function buildApp() {
   const app = Fastify({
@@ -14,51 +13,9 @@ export function buildApp() {
 
   const pool = initializeDB();
 
-  app.register(requestContextPlugin);
-  app.register(errorHandler);
-  app.register(loggerPlugin);
-
-  registerProductModule(app, pool);
-
-  app.get('/', async () => {
-    return { app: 'ecom' };
-  });
-
-  app.get('/health', async (req) => {
-    req.log.info('health check');
-    return { status_app: 'ok' };
-  });
-
-  app.get('/health/db', async () => {
-    try {
-      const client = await pool.connect();
-
-      try {
-        await client.query('SELECT 1');
-      } finally {
-        client.release();
-      }
-    } catch (error) {
-      console.log('check db alive failed: ', error);
-    }
-
-    return {
-      status_db: 'ok',
-    };
-  });
-
-  app.post('/login', async () => {
-    return {
-      accessToken: 'abc123',
-    };
-  });
-
-  app.get('/profile', async () => {
-    return {
-      id: 1,
-      username: 'user1',
-    };
-  });
+  registerInfrastructure(app);
+  registerHealthCheck(app, pool);
+  registerModules(app, pool);
 
   return app;
 }
