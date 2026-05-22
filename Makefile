@@ -68,7 +68,7 @@ db-bootstrap:
 	$(MAKE) db-create-db
 	@./scripts/db/extensions.sh
 	@./scripts/db/migrate.sh ACTION=boot
-	$(MAKE) db-seed
+# 	$(MAKE) db-seed
 
 # ==================================================
 # GIT FLOW
