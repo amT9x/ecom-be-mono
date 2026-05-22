@@ -34,11 +34,11 @@ doctor_dev() {
 }
 
 doctor_ci() {
-  echo "==> CI doctor..."
+  echo "==> CI doctor enviroment..."
   node -v
   npm -v
   docker --version
-  echo "✅ CI doctor...done"
+  echo "✅ CI doctor enviroment...done"
 }
 
 case "$MODE" in
