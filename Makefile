@@ -26,8 +26,6 @@ dk-down:
 # ==================================================
 # DATABASE
 # ==================================================
-wait-db:
-	@./scripts/db/wait_db.sh $(MODE)
 
 db-create-user:
 	@./scripts/db/manage.sh create-user
@@ -50,98 +48,27 @@ db-access-db-ecomdb:
 db-access-db-testdb:
 	@./scripts/db/manage.sh access-db-testdb
 
-db-extensions:
-	@./scripts/db/extensions.sh
-
 db-seed:
 	@./scripts/db/seed.sh
 
-db-seed-inventory:
-	npx tsx --tsconfig tsconfig.scripts.json db/seed/dev/seed_inventory.ts
-
-db-test:
-	@./scripts/db/test.sh
-
-db-reset-data:
-	@./scripts/db/manage.sh reset-data
-
-db-reset-schema:
-	@./scripts/db/manage.sh reset-schema
-
 db-migrate:
-	@./scripts/db/migrate.sh $(MODE)
-
-db-migrate-local:
-	NODE_ENV=test npx tsx scripts/db/migrate.ts
-
-db-pre-push:
-	@./scripts/db/pre_push.sh
+	@env -u DB_URL NODE_ENV=$(NODE_ENV) ./scripts/db/migrate.sh $(ACTION)
 
 db-reset:
 	$(MAKE) db-drop-db
 	$(MAKE) db-create-db
-	$(MAKE) db-migrate-local
+	$(MAKE) db-migrate
 	$(MAKE) db-seed
 
-db-fresh-data: db-reset-data db-seed
+db-fresh-data:
+	@./scripts/db/manage.sh reset-data
+	$(MAKE) db-seed
 
 db-bootstrap:
 	$(MAKE) db-create-db
-	$(MAKE) db-extensions
-	$(MAKE) db-migrate MODE=boot
+	@./scripts/db/extensions.sh
+	@./scripts/db/migrate.sh ACTION=boot
 	$(MAKE) db-seed
-
-# ==================================================
-# APP
-# ==================================================
-app-install-npm:
-	npm install
-
-app-install-ci:
-	npm ci
-
-app-audit-high:
-	npm audit --audit-level=high || true
-
-app-audit-critical:
-	npm audit --audit-level=critical
-
-app-run:
-	npm run dev
-
-app-build:
-	npm run build
-
-app-start:
-	npm run start
-
-# ==================================================
-# TESTING
-# ==================================================
-test:
-	npm test
-
-test-unit:
-	npm run test:unit
-
-test-int:
-	npm run test:int
-
-test-watch:
-	npm run test:watch
-
-# ==================================================
-# QUALITY
-# ==================================================
-lint:
-	npm run lint
-
-typecheck:
-	npm run typecheck
-
-fix:
-	npm run format
-	npm run lint -- --fix
 
 # ==================================================
 # GIT FLOW
@@ -168,15 +95,22 @@ git-new-branch:
 .PHONY: pre-commit
 pre-commit:
 	@echo "==> Precommit..."
-	@$(MAKE) lint
-	@$(MAKE) typecheck
+	npm run lint
+	npm run typecheck
 	@echo "✅ Precommit...done"
+
+.PHONY: pre-commit-fix
+pre-commit-fix:
+	@echo "==> Commit..."
+	npm run format
+	npm run lint -- --fix
+	@echo "✅ Commit...done"
 
 .PHONY: pre-push
 pre-push:
 	@echo "==> Prepush..."
 	@$(MAKE) pre-commit
-	@$(MAKE) db-pre-push
+	@./scripts/db/pre_push.sh
 	@echo "✅ Prepush...done"
 
 # ==================================================
@@ -199,11 +133,11 @@ clean-node:
 # ==================================================
 bootstrap: config-env
 	@$(MAKE) db-bootstrap
-	@$(MAKE) app-install-npm
+	npm install
 	@$(MAKE) dk-build-up
 up: dk-up
 down: dk-down
-dev: app-run
+dev: npm run dev
 ci:
 	@./scripts/ci/run.sh
 
@@ -222,7 +156,6 @@ help:
 	@echo "  make db-migrate"
 	@echo "  make db-seed"
 	@echo "  make db-reset"
-	@echo "  make db-pre-push"
 	@echo ""
 	@echo "🧪 QUALITY"
 	@echo "  make test"

@@ -3,18 +3,21 @@ set -euo pipefail
 
 ACTION="${1:-help}"
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DOCTOR_ENV="$(cd "$SCRIPT_DIR/../enviroments" && pwd)/doctor.sh"
+
 NETWORK="ci-network"
 APP_CONTAINER="app-test"
 DB_CONTAINER="postgres"
 IMAGE="app:test"
 
 validate() {
-  make doctor MODE=ci
-  make app-install-ci
-  make lint
-  make typecheck
-  make app-audit-high
-  make app-audit-critical
+  "$DOCTOR_ENV" ci
+  npm ci
+  npm run lint
+  npm run typecheck
+  npm audit --audit-level=high || true
+  npm audit --audit-level=critical
 }
 
 # =========================

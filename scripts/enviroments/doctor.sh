@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-MODE="${1:-dev}"
+ACTION="${1:-help}"
 
 print_header() {
     echo "=================================="
@@ -41,7 +41,7 @@ doctor_ci() {
   echo "✅ CI doctor enviroment...done"
 }
 
-case "$MODE" in
+case "$ACTION" in
     dev)
         doctor_dev
         ;;

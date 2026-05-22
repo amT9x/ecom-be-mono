@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ACTION="${1:-help}"
+ACTION="${1:-dev}"
+NODE_ENV="${NODE_ENV:-development}"
 
 migrate_dev() {
   npx tsx scripts/db/migrate.ts
