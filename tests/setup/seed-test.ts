@@ -1,5 +1,17 @@
 import { Pool } from "pg";
 
+export async function seedUser (pool: Pool, USER_ID: string, USER_EMAIL: string, USER_PASSWORD: string, USER_FULL_NAME: string) {
+  await pool.query(
+    `
+      INSERT INTO users
+      (id, email, password_hash, full_name)
+      VALUES ($1, $2, $3, $4)
+      RETURNING *
+    `,
+    [USER_ID, USER_EMAIL, USER_PASSWORD, USER_FULL_NAME],
+  )
+}
+
 export async function seedProduct (pool: Pool, PRODUCT_ID: string, productsName: string, productPrice: number) {
   await pool.query(
     `INSERT INTO products(id, name, price)

@@ -23,9 +23,11 @@ export const ORDER = {
 
 export const USER = {
   id: '33333333-3333-3333-3333-333333333333',
-  username: 'admin',
+  email: 'admin@example.com',
   password: 'admin',
-}
+  full_name: 'admin',
+  role: 'USER',
+};
 
 export const PAYMENT = {
   id: '44444444-4444-4444-4444-444444444444',

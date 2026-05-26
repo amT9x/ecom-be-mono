@@ -17,3 +17,9 @@ export async function resetDatabase() {
     TRUNCATE inventory, products, orders, order_items, payments RESTART IDENTITY CASCADE;
   `);
 }
+
+export async function resetDatabaseUser() {
+  await testPool.query(`
+    TRUNCATE users RESTART IDENTITY CASCADE;`
+  );
+}
