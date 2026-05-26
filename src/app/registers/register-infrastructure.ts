@@ -6,6 +6,6 @@ import { errorHandler } from "../../plugins/error-handler.plugin.js";
 
 export async function registerInfrastructure (app: FastifyInstance) {
   app.register(requestContextPlugin);
-  app.register(loggerPlugin);
+  // app.register(loggerPlugin);
   app.register(errorHandler);
 }
