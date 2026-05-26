@@ -1,0 +1,29 @@
+@id =
+############################################################
+
+### POST
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "email": "user2000@example.com",
+  "password": "1",
+  "full_name": "user2000"
+}
+
+### GET
+GET {{baseUrl}}/users/{{id}}
+
+### UPDATE
+PUT {{baseUrl}}/users/{{id}}
+Content-Type: application/json
+
+{
+  "email": "user2001@example.com",
+  "full_name": "user2001"
+}
+
+### DELETE
+DELETE {{baseUrl}}/users/{{id}}
+
+############################################################
