@@ -1,3 +1,4 @@
+import { appLogger } from '../../../infrastructure/logger/app.logger.js';
 import { JwtService } from '../../../shared/security/jwt.service.js';
 import { PasswordService } from '../../../shared/security/password.service.js';
 import { UserRepository } from '../../user/domain/user.repository.js';
@@ -46,6 +47,14 @@ export class RegisterUsecase {
       email: user.email,
       role: user.role,
     });
+
+    appLogger.info(
+      {
+        userId: user.id,
+        email: user.email,
+      },
+      'User registered',
+    );
 
     return {
       user: {
