@@ -7,6 +7,7 @@ import { AuthController } from "../presentation/http/auth.controller.js";
 import { AuthRoute } from "../presentation/http/auth.route.js";
 import { RegisterUsecase } from "../application/register.usecase.js";
 import { JwtService } from "../../../shared/security/jwt.service.js";
+import { LoginUseCase } from "../application/login.usecase.js";
 
 export async function registerAuthModule(app: FastifyInstance, pool: Pool) {
   //repository
@@ -18,9 +19,13 @@ export async function registerAuthModule(app: FastifyInstance, pool: Pool) {
 
   //usecase
   const createUserUsecase = new RegisterUsecase(userRepository, password_hash, jwtService);
+  const loginUsecase = new LoginUseCase(userRepository, password_hash, jwtService);
 
   //controller
-  const authController = new AuthController(createUserUsecase);
+  const authController = new AuthController(
+    createUserUsecase,
+    loginUsecase
+  );
 
   //route
   app.register(AuthRoute, {

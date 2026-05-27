@@ -8,4 +8,6 @@ export function AuthRoute(app: FastifyInstance, options: any) {
     '/auth/register',
     {schema: registerSchema},
     controller.register);
+
+  app.post('/auth/login', controller.login);
 }
