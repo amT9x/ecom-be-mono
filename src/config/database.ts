@@ -15,9 +15,9 @@ export function initializeDB() {
     query_timeout: 5000,
   });
 
-  pool.on('connect', () => {
-    console.log('DB connected successfully');
-  });
+  // pool.on('connect', () => {
+  //   console.log('DB connected successfully');
+  // });
 
   // pool.on('error', (err) => {
   //   console.error('DB connection error:', err);
