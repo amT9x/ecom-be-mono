@@ -5,6 +5,8 @@ import { PasswordService } from "../../../shared/security/password.service.js";
 import { CreateUserUsecase } from "../../user/application/create-user.usecase.js";
 import { AuthController } from "../presentation/http/auth.controller.js";
 import { AuthRoute } from "../presentation/http/auth.route.js";
+import { RegisterUsecase } from "../application/register.usecase.js";
+import { JwtService } from "../../../shared/security/jwt.service.js";
 
 export async function registerAuthModule(app: FastifyInstance, pool: Pool) {
   //repository
@@ -12,9 +14,10 @@ export async function registerAuthModule(app: FastifyInstance, pool: Pool) {
 
   //services
   const password_hash = new PasswordService();
+  const jwtService = new JwtService();
 
   //usecase
-  const createUserUsecase = new CreateUserUsecase(userRepository, password_hash);
+  const createUserUsecase = new RegisterUsecase(userRepository, password_hash, jwtService);
 
   //controller
   const authController = new AuthController(createUserUsecase);

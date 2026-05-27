@@ -1,16 +1,20 @@
 import { JwtService } from '../../../shared/security/jwt.service.js';
 import { PasswordService } from '../../../shared/security/password.service.js';
-import { User } from '../../user/domain/user.entity.js';
 import { UserRepository } from '../../user/domain/user.repository.js';
 
-type Input = {
+type RrequestInput = {
   email: string;
   password: string;
   full_name: string;
 };
 
-type Output = {
-  user: User;
+type RegisterResponse = {
+  user: {
+    id: string;
+    email: string;
+    full_name: string;
+    role: string;
+  };
   access_token: string;
 };
 
@@ -21,7 +25,7 @@ export class RegisterUsecase {
     private readonly jwtService: JwtService,
   ) {}
 
-  async execute(input: Input): Promise<Output> {
+  async execute(input: RrequestInput): Promise<RegisterResponse> {
     const existingUser = await this.userRepository.findByEmail(input.email);
 
     if (existingUser) {
@@ -44,7 +48,12 @@ export class RegisterUsecase {
     });
 
     return {
-      user,
+      user: {
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name,
+        role: user.role,
+      },
       access_token,
     };
   }
