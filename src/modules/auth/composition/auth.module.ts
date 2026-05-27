@@ -9,6 +9,7 @@ import { JwtService } from "../../../shared/security/jwt.service.js";
 import { LoginUseCase } from "../application/login.usecase.js";
 import { RefreshTokenUseCase } from "../application/refresh-token.usecase.js";
 import { PostgresRefreshTokenRepository } from "../infrastructure/postgres-refresh-token.repository.js";
+import { LogoutUseCase } from "../application/logout.usecase.js";
 
 export async function registerAuthModule(app: FastifyInstance, pool: Pool) {
   //repository
@@ -32,12 +33,14 @@ export async function registerAuthModule(app: FastifyInstance, pool: Pool) {
     userRepository,
     refreshTokenRepository,
   );
+  const logoutUsecase = new LogoutUseCase(refreshTokenRepository);
 
   //controller
   const authController = new AuthController(
     registerUsecase,
     loginUsecase,
-    refreshTokenUsecase
+    refreshTokenUsecase,
+    logoutUsecase
   );
 
   //route

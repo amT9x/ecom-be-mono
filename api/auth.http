@@ -25,7 +25,7 @@ POST {{baseUrl}}/auth/logout
 Content-Type: application/json
 
 {
-  "refreshToken": "{{refresh_token}}"
+  "refresh_token": "{{refresh_token}}"
 }
 
 ### REFRESH TOKEN

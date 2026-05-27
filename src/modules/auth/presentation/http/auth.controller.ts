@@ -4,7 +4,8 @@ export class AuthController {
   constructor(
     private readonly registerUsecase: any,
     private readonly loginUsecase: any,
-    private readonly refreshTokenUsecase: any
+    private readonly refreshTokenUsecase: any,
+    private readonly logoutUsecase: any
   ) {}
 
   register = async (req: FastifyRequest, reply: FastifyReply) => {
@@ -18,7 +19,7 @@ export class AuthController {
   }
 
   logout = async (req: FastifyRequest, reply: FastifyReply) => {
-    const result = await this.loginUsecase.execute(req.body);
+    const result = await this.logoutUsecase.execute(req.body);
     return reply.status(200).send(result);
   }
 
