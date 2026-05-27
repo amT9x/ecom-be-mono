@@ -18,11 +18,11 @@ export class UserController {
   };
 
   getProfile = async (
-    req: FastifyRequest<{ Params: GetProfileParams }>,
+    req: FastifyRequest,
     reply: FastifyReply,
   ) => {
-    const result = await this.getProfileUseCase.execute(req.params.id);
-    return reply.send(result);
+    const result = await this.getProfileUseCase.execute(req.user.id);
+    return reply.status(200).send(result);
   };
 
   updateProfile = async (
