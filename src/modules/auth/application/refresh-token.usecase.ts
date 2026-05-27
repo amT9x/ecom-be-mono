@@ -11,7 +11,8 @@ type Output = {
 export class RefreshTokenUseCase {
   constructor(
     private readonly jwtService: any,
-    private readonly userRepository: any
+    private readonly userRepository: any,
+    private readonly refreshTokenRepository: any
   ) {}
 
   async execute(input: Input): Promise<Output> {
@@ -22,6 +23,22 @@ export class RefreshTokenUseCase {
       'Refreshing token'
     );
     const payload = this.jwtService.verifyRefreshToken(input.refresh_token);
+
+    const refreshTokenRecord = await this.refreshTokenRepository.findByToken(
+      input.refresh_token,
+    );
+
+    if (!refreshTokenRecord) {
+      throw new Error('Refresh token not found');
+    }
+
+    if (refreshTokenRecord.isRevoked()) {
+      throw new Error('Refresh token revoked');
+    }
+
+    if (refreshTokenRecord.isExpired()) {
+      throw new Error('Refresh token expired');
+    }
 
     const user = await this.userRepository.findById(payload.sub);
 

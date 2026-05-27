@@ -17,6 +17,11 @@ export class AuthController {
     return reply.status(200).send(result);
   }
 
+  logout = async (req: FastifyRequest, reply: FastifyReply) => {
+    const result = await this.loginUsecase.execute(req.body);
+    return reply.status(200).send(result);
+  }
+
   refresh_token = async (req: FastifyRequest, reply: FastifyReply) => {
     const body = req.body as { refresh_token: string };
     console.log('body: ', body);

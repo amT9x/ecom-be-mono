@@ -3,6 +3,7 @@ import { JwtService } from "../../../shared/security/jwt.service.js";
 import { PasswordService } from "../../../shared/security/password.service.js";
 import { UserRepository } from "../../user/domain/user.repository.js";
 import { appLogger } from "../../../infrastructure/logger/app.logger.js";
+import { RefreshTokenRepository } from "../domain/refresh-token.repository.js";
 
 type LoginInput = {
   email: string;
@@ -18,7 +19,8 @@ export class LoginUseCase {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly passwordService: PasswordService,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+    private readonly refreshTokenRepository: RefreshTokenRepository
   ) {}
 
   async execute(input: LoginInput): Promise<LoginResponse> {
@@ -48,6 +50,12 @@ export class LoginUseCase {
       sub: user.id,
       email: user.email,
       role: user.role,
+    });
+
+    await this.refreshTokenRepository.create({
+      user_id: user.id,
+      token: refresh_token,
+      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     });
 
     appLogger.info(

@@ -11,5 +11,7 @@ export function AuthRoute(app: FastifyInstance, options: any) {
 
   app.post('/auth/login', controller.login);
 
+  app.post('/auth/logout', controller.logout);
+
   app.post('/auth/refresh-token', controller.refresh_token);
 }
