@@ -1,3 +1,4 @@
+import { appLogger } from "../../../infrastructure/logger/app.logger.js";
 import { UserRepository } from "../domain/user.repository.js";
 
 type ProfileResponse = {
@@ -5,7 +6,6 @@ type ProfileResponse = {
   email: string;
   full_name: string;
   role: "USER" | "ADMIN";
-  created_at: Date;
 };
 
 export class GetProfileUseCase {
@@ -18,12 +18,19 @@ export class GetProfileUseCase {
       throw new Error('User not found');
     }
 
+    appLogger.info(
+      {
+        userId: user.id,
+        email: user.email,
+      },
+      'User profile retrieved',
+    );
+
     return {
       id: user.id,
       email: user.email,
       full_name: user.full_name,
-      role: user.role,
-      created_at: user.created_at,
+      role: user.role
     };
   }
 }
