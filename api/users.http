@@ -1,4 +1,5 @@
 @id =
+@accessToken =
 ############################################################
 
 ### POST
@@ -11,8 +12,9 @@ Content-Type: application/json
   "full_name": "user2000"
 }
 
-### GET
-GET {{baseUrl}}/users/{{id}}
+### GET ME
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{accessToken}}
 
 ### UPDATE
 PUT {{baseUrl}}/users/{{id}}

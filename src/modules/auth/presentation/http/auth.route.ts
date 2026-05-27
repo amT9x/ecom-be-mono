@@ -10,4 +10,6 @@ export function AuthRoute(app: FastifyInstance, options: any) {
     controller.register);
 
   app.post('/auth/login', controller.login);
+
+  app.post('/auth/refresh-token', controller.refresh_token);
 }

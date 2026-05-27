@@ -11,6 +11,7 @@ type LoginInput = {
 
 type LoginResponse = {
   access_token: string;
+  refresh_token: string
 }
 
 export class LoginUseCase {
@@ -43,6 +44,12 @@ export class LoginUseCase {
       role: user.role,
     });
 
+    const refresh_token = this.jwtService.generateRefreshToken({
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    });
+
     appLogger.info(
       {
         userId: user.id,
@@ -52,7 +59,8 @@ export class LoginUseCase {
     );
 
     return {
-      access_token
+      access_token,
+      refresh_token
     }
   }
 }

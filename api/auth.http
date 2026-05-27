@@ -1,3 +1,6 @@
+@refresh_token=
+@accessTokenNew=
+
 ### POST REGISTER
 POST {{baseUrl}}/auth/register
 Content-Type: application/json
@@ -15,4 +18,12 @@ Content-Type: application/json
 {
   "email": "user2000@example.com",
   "password": "111111"
+}
+
+### REFRESH TOKEN
+POST {{baseUrl}}/auth/refresh-token
+Content-Type: application/json
+
+{
+  "refresh_token": "{{refresh_token}}"
 }
