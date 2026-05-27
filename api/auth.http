@@ -1,0 +1,10 @@
+### POST
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "user2001@example.com",
+  "password": "111111",
+  "full_name": "user2001"
+}
+
