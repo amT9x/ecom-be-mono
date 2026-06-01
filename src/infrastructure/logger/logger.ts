@@ -7,6 +7,11 @@ export const logger = pino({
   ...loggerConfig,
 
   mixin() {
-    return requestContext.get() ?? {};
+    const ctx = requestContext.get();
+
+    return {
+      requestId: ctx?.requestId,
+      userId: ctx?.userId,
+    };
   },
 });

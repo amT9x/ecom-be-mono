@@ -1,0 +1,37 @@
+@refresh_token=
+@accessTokenNew=
+
+### POST REGISTER
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "user2000@example.com",
+  "password": "111111",
+  "full_name": "user2001"
+}
+
+### POST LOGIN
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "user2000@example.com",
+  "password": "111111"
+}
+
+### LOGOUT
+POST {{baseUrl}}/auth/logout
+Content-Type: application/json
+
+{
+  "refresh_token": "{{refresh_token}}"
+}
+
+### REFRESH TOKEN
+POST {{baseUrl}}/auth/refresh-token
+Content-Type: application/json
+
+{
+  "refresh_token": "{{refresh_token}}"
+}

@@ -24,7 +24,7 @@ export const ORDER = {
 export const USER = {
   id: '33333333-3333-3333-3333-333333333333',
   email: 'admin@example.com',
-  password: 'admin',
+  password: 'admin123',
   full_name: 'admin',
   role: 'USER',
 };
