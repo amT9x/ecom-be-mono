@@ -82,11 +82,18 @@ run_app() {
 
   docker run -d \
     --network "$NETWORK" \
-    -e DB_URL=postgresql://test:test@postgres:5432/testdb \
+    -e NODE_ENV=test \
     -e HOST=0.0.0.0 \
     -e PORT=3000 \
-    -e NODE_ENV=test \
     -e APP_NAME=ecom-test \
+    -e DB_URL=postgresql://test:test@postgres:5432/testdb \
+    -e REDIS_URL=redis://redis:6379 \
+    -e JWT_SECRET=test-secret \
+    -e JWT_REFRESH_SECRET=test-refresh-secret \
+    -e JWT_ACCESS_EXPIRES_IN_15M=15m \
+    -e JWT_ACCESS_EXPIRES_IN_1H=1h \
+    -e JWT_ACCESS_EXPIRES_IN_7D=7d \
+    -e JWT_ACCESS_EXPIRES_IN_30D=30d \
     -p 3000:3000 \
     --name "$APP_CONTAINER" \
     "$IMAGE"
@@ -98,9 +105,14 @@ run_app() {
       break
     fi
     sleep 1
+    
   done
 
   docker inspect -f '{{.State.Running}}' "$APP_CONTAINER"
+
+  echo "==> ENV INSIDE CONTAINER"
+
+  docker exec "$APP_CONTAINER" env | sort
 
   echo "✅ App running"
 }
@@ -149,7 +161,17 @@ run_test_int() {
   docker run --rm \
     --network "$NETWORK" \
     -e NODE_ENV=test \
+    -e HOST=0.0.0.0 \
+    -e PORT=3000 \
+    -e APP_NAME=ecom-test \
     -e DB_URL=postgresql://test:test@postgres:5432/testdb \
+    -e REDIS_URL=redis://redis:6379 \
+    -e JWT_SECRET=test-secret \
+    -e JWT_REFRESH_SECRET=test-refresh-secret \
+    -e JWT_ACCESS_EXPIRES_IN_15M=15m \
+    -e JWT_ACCESS_EXPIRES_IN_1H=1h \
+    -e JWT_ACCESS_EXPIRES_IN_7D=7d \
+    -e JWT_ACCESS_EXPIRES_IN_30D=30d \
     test-int-runner
 
   echo "✅ Test-int done"
